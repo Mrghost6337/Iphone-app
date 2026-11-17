@@ -1,56 +1,30 @@
-# Welcome to your Expo app 👋
+# Bord – Expo Go-versie (SDK 58)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Een iPhone-app om voeding te scannen. Je fotografeert je maaltijd, Claude AI herkent wat erop staat en Bord rekent de kcal, het eiwit, de koolhydraten en het vet uit. Daarnaast heeft de app een barcodescanner met Open Food Facts, recepten die je stap voor stap volgt, vrienden die je via een QR-code toevoegt en een puntenranglijst.
 
-## Get started
-
-1. Install dependencies
-
+## Op je iPhone draaien (in ongeveer 2 minuten)
+1. Installeer **Expo Go** uit de App Store. Het moet de nieuwste versie zijn, die SDK 58 ondersteunt.
+2. Installeer **Node.js 20 of hoger** op je computer.
+3. Voer in deze map het volgende uit:
    ```bash
    npm install
-   ```
-
-2. Start the app
-
-   ```bash
    npx expo start
    ```
+4. Scan de QR-code in de terminal met de **Camera-app** van je iPhone. De app opent dan in Expo Go.
+   - Zitten je computer en je iPhone niet op hetzelfde wifi-netwerk? Gebruik dan `npx expo start --tunnel`.
 
-In the output, you'll find options to open the app in a
+## Problemen oplossen
+- **"Project is incompatible with this version of Expo Go"**: werk Expo Go bij in de App Store. Dit project gebruikt SDK 58, de nieuwste versie.
+- **De QR-code laadt niet of blijft hangen**: zorg dat je iPhone en computer op hetzelfde wifi-netwerk zitten, of gebruik `npx expo start --tunnel`. Schudden in Expo Go → Reload laadt de app opnieuw.
+- **Camera of foto's weigeren**: geef in iOS Instellingen → Expo Go toestemming voor Camera en Foto's.
+- **De app opnieuw beginnen**: Instellingen in de app → Alles wissen.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## AI-fotoherkenning
+Ga naar Instellingen → AI-sleutel en vul je eigen Anthropic API-sleutel in. De sleutel blijft in de iOS-sleutelhanger (SecureStore) op je toestel en zit nooit in de code. Zonder sleutel werken barcode, zoeken en beschrijven gewoon. Alleen de herkenning van foto's heeft de sleutel nodig.
 
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Wat werkt in Expo Go
+Onboarding (20 stappen), camera, barcode, de AI-scan, correcties, het dashboard, water, vooruitgang, gewicht, recepten met checklists en timers, posten, liken, comments, vrienden via QR, de ranglijst, instellingen, profielfoto, meldingen, CSV-export en de donkere modus.
 
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
-
-### Other setup steps
-
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Wat Expo Go níet kan (Apple-beperking, geen bug)
+- **Widgets, Live Activities, de echte Dynamic Island en Siri** hebben een eigen app-build nodig (`npx expo prebuild` en EAS Build) of de SwiftUI-versie in `Bord/`. In Expo Go zie je daarvoor een eigen "island" bovenaan het scherm.
+- **De community en vrienden** werken nu lokaal of via de QR-code. Om ze live te delen met anderen is een server nodig, en die komt bij de launch.
