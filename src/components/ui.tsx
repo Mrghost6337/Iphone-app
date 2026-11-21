@@ -1,11 +1,12 @@
 import { GlassView } from 'expo-glass-effect';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
-import { SymbolView, SymbolViewProps } from 'expo-symbols';
+import { AndroidSymbol, SymbolView, SymbolViewProps } from 'expo-symbols';
 import React from 'react';
 import { Pressable, PressableProps, StyleProp, StyleSheet, Text, TextProps, TextStyle, View, ViewStyle } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
+import { MATERIAL } from '@/lib/symbols';
 import { curve, radius, space, useColors } from '@/lib/theme';
 
 export const haptic = {
@@ -39,7 +40,8 @@ export const squircle = { borderCurve: 'continuous' } as const;
 
 export function Icon({ name, size = 22, color, weight = 'semibold', style }: { name: string; size?: number; color?: string; weight?: SymbolViewProps['weight']; style?: StyleProp<ViewStyle> }) {
   const c = useColors();
-  return <SymbolView name={name as SymbolViewProps['name']} size={size} tintColor={color ?? c.label} weight={weight} style={[{ width: size, height: size }, style]} resizeMode="scaleAspectFit" />;
+  const md = MATERIAL[name] as AndroidSymbol | undefined;
+  return <SymbolView name={{ ios: name as Extract<SymbolViewProps['name'], string>, android: md, web: md }} size={size} tintColor={color ?? c.label} weight={weight} style={[{ width: size, height: size }, style]} resizeMode="scaleAspectFit" />;
 }
 
 export function T({ style, variant = 'body', color, ...rest }: TextProps & { variant?: keyof typeof typo; color?: string }) {
