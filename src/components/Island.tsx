@@ -54,7 +54,7 @@ function IslandView({ msg }: { msg: IslandMsg }) {
         {msg.detail ? <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }} numberOfLines={1}>{msg.detail}</Text> : null}
       </View>
       {msg.trailing || msg.until ? (
-        <Text style={{ color: c.accent, fontWeight: '900', fontSize: msg.until ? 22 : 16, marginLeft: 'auto', fontVariant: ['tabular-nums'] }}>
+        <Text style={{ color: c.accent, fontWeight: '700', fontSize: msg.until ? 22 : 16, marginLeft: 'auto', fontVariant: ['tabular-nums'] }}>
           {msg.until ? `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}` : msg.trailing}
         </Text>
       ) : null}

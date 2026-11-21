@@ -1,12 +1,12 @@
 import React, { useMemo } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Avatar, Bar, Card, Divider, Icon, IconBadge, IconButton, PillButton, Ring, Row, Section, T, haptic, hexA } from '@/components/ui';
 import { insights } from '@/lib/insights';
 import { MEALS, dayKey, lastNDays, fmt, mealBudgets, sameDay, scaled, sumEntries, targets } from '@/lib/nutrition';
 import { useStore } from '@/lib/store';
-import { radius, space, useColors } from '@/lib/theme';
+import { space, useColors } from '@/lib/theme';
 import { router, useLocalSearchParams } from 'expo-router';
 
 const SRC_ICON: Record<string, string> = { photo: 'camera.fill', barcode: 'barcode.viewfinder', describe: 'text.bubble', search: 'magnifyingglass', recipe: 'frying.pan', manual: 'square.and.pencil' };
@@ -64,23 +64,23 @@ export default function Today() {
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 18 }}>
             <Ring size={160} stroke={17} progress={tot.kcal / t.calories}>
               <View style={{ alignItems: 'center' }} accessible accessibilityLabel={over ? `${fmt(-left)} kilocalorieën te veel` : `${fmt(left)} kilocalorieën over`}>
-                <Text style={{ fontSize: 38, fontWeight: '900', color: c.label, fontVariant: ['tabular-nums'] }}>{E(Math.abs(left))}</Text>
+                <Text style={{ fontSize: 38, fontWeight: '700', letterSpacing: -1, color: c.label, fontVariant: ['tabular-nums'] }}>{E(Math.abs(left))}</Text>
                 <T variant="sub" color={c.label2}>{U} {over ? 'te veel' : 'over'}</T>
               </View>
             </Ring>
             <View style={{ flex: 1, gap: 12 }}>
               {[['Doel', E(t.calories), U], ['Gegeten', E(tot.kcal), U], ['Vezels', fmt(tot.fiber), `/ ${t.fiber} g`]].map(([k, v, u]) => (
-                <View key={k}><T variant="cap" color={c.label2}>{k}</T><Text style={{ fontSize: 22, fontWeight: '800', color: c.label, fontVariant: ['tabular-nums'] }}>{v} <Text style={{ fontSize: 13, color: c.label2 }}>{u}</Text></Text></View>
+                <View key={k}><T variant="cap" color={c.label2}>{k}</T><Text style={{ fontSize: 22, fontWeight: '700', color: c.label, fontVariant: ['tabular-nums'] }}>{v} <Text style={{ fontSize: 13, color: c.label2 }}>{u}</Text></Text></View>
               ))}
             </View>
           </View>
-          <View style={{ flexDirection: 'row', gap: 8, marginTop: 18 }}>
+          <View style={{ flexDirection: 'row', gap: 16, marginTop: 18, paddingTop: 16, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.sep }}>
             {([['Eiwit', 'protein', c.protein], ['Koolh.', 'carbs', c.carbs], ['Vet', 'fat', c.fat]] as const).map(([n, k, col]) => {
               const v = tot[k], target = t[k], l = Math.round(target - v);
               return (
-                <View key={k} style={{ flex: 1, backgroundColor: c.card2, borderRadius: radius.m, padding: 12, gap: 6 }} accessible accessibilityLabel={`${n} ${fmt(v)} van ${target} gram`}>
+                <View key={k} style={{ flex: 1, gap: 6 }} accessible accessibilityLabel={`${n} ${fmt(v)} van ${target} gram`}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}><View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: col }} /><T variant="cap">{n}</T></View>
-                  <Text style={{ fontSize: 20, fontWeight: '800', color: c.label, fontVariant: ['tabular-nums'] }}>{fmt(v)}<Text style={{ fontSize: 12, color: c.label2 }}> / {target} g</Text></Text>
+                  <Text style={{ fontSize: 20, fontWeight: '700', color: c.label, fontVariant: ['tabular-nums'] }}>{fmt(v)}<Text style={{ fontSize: 12, color: c.label2 }}> / {target} g</Text></Text>
                   <Bar value={v / target} color={col} />
                   <T variant="cap" color={c.label2} style={{ fontWeight: '500' }}>{l > 0 ? `nog ${l} g` : 'gehaald'}</T>
                 </View>
@@ -92,10 +92,10 @@ export default function Today() {
 
       <Section>
         <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <IconBadge icon="drop.fill" color={c.water} />
+          <IconBadge icon="drop.fill" color={c.water} size={30} />
           <View style={{ flex: 1, gap: 8 }}>
             <T variant="h3">Water <Text style={{ color: c.label2, fontWeight: '600' }}>{water} / {t.water} glazen</Text></T>
-            <View style={{ flexDirection: 'row', gap: 4 }}>{Array.from({ length: t.water }, (_, i) => <View key={i} style={{ flex: 1, height: 8, borderRadius: 3, backgroundColor: i < water ? c.water : hexA(c.water, 0.18) }} />)}</View>
+            <View style={{ flexDirection: 'row', gap: 4 }}>{Array.from({ length: t.water }, (_, i) => <View key={i} style={{ flex: 1, height: 8, borderRadius: 3, backgroundColor: i < water ? c.water : c.fill }} />)}</View>
           </View>
           <IconButton icon="minus" size={38} label="Glas eraf" onPress={() => setWater(-1)} />
           <IconButton icon="plus" size={38} label="Glas water erbij" color={c.water} onPress={() => setWater(1)} />
@@ -105,7 +105,7 @@ export default function Today() {
       {tip ? (
         <Section>
           <Card style={{ flexDirection: 'row', gap: 14 }}>
-            <IconBadge icon={tip.icon} size={40} color={tip.tone === 'positive' ? c.good : tip.tone === 'attention' ? c.warn : c.accent} />
+            <IconBadge icon={tip.icon} size={26} color={tip.tone === 'positive' ? c.good : tip.tone === 'attention' ? c.warn : c.accent} />
             <View style={{ flex: 1, gap: 3 }}><T variant="h3">{tip.title}</T><T variant="sub" color={c.label2}>{tip.message}</T></View>
           </Card>
         </Section>
@@ -116,7 +116,7 @@ export default function Today() {
         return (
           <Section key={m.id} title={m.title} right={
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-              <Text style={{ fontSize: 15, color: c.label2, fontVariant: ['tabular-nums'] }}><Text style={{ color: c.label, fontWeight: '800' }}>{E(k)}</Text> / {E(budgets[m.id])}</Text>
+              <Text style={{ fontSize: 15, color: c.label2, fontVariant: ['tabular-nums'] }}><Text style={{ color: c.label, fontWeight: '700' }}>{E(k)}</Text> / {E(budgets[m.id])}</Text>
               <IconButton icon="plus" size={36} label={`Voeg toe aan ${m.title}`} onPress={() => router.push({ pathname: '/add', params: { meal: m.id, day: dayIso } })} />
             </View>}>
             <Card pad={false}>
@@ -128,12 +128,12 @@ export default function Today() {
                     <Row onPress={() => router.push(`/edit/${e.id}`)} label={`${e.name}, ${fmt(n.kcal)} kilocalorieën`}>
                       {e.photo
                         ? <Image source={{ uri: e.photo }} style={{ width: 46, height: 46, borderRadius: 13 }} />
-                        : <IconBadge icon={SRC_ICON[e.source] ?? 'fork.knife'} size={46} />}
+                        : <View style={{ width: 46, height: 46, borderRadius: 12, backgroundColor: c.fill, alignItems: 'center', justifyContent: 'center' }}><Icon name={SRC_ICON[e.source] ?? 'fork.knife'} size={20} color={c.label2} weight="regular" /></View>}
                       <View style={{ flex: 1, minWidth: 0 }}>
                         <T variant="bodyB" numberOfLines={2}>{e.name}</T>
                         <T variant="sub" color={c.label2}>{fmt(e.grams)} g · E {fmt(n.protein)} · K {fmt(n.carbs)} · V {fmt(n.fat)}</T>
                       </View>
-                      <Text style={{ fontSize: 17, fontWeight: '800', color: c.label, fontVariant: ['tabular-nums'] }}>{E(n.kcal)}<Text style={{ fontSize: 12, color: c.label2 }}> {U}</Text></Text>
+                      <Text style={{ fontSize: 17, fontWeight: '700', color: c.label, fontVariant: ['tabular-nums'] }}>{E(n.kcal)}<Text style={{ fontSize: 12, color: c.label2 }}> {U}</Text></Text>
                     </Row>
                   </View>
                 );

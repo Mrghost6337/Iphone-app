@@ -30,7 +30,7 @@ export default function EditEntry() {
       {e.photo ? <Image source={{ uri: e.photo }} style={{ height: 180, borderRadius: radius.l }} contentFit="cover" accessibilityLabel="Je foto" /> : null}
       <View style={{ alignItems: 'center' }}>
         <T variant="h2" style={{ textAlign: 'center' }}>{e.name}</T>
-        <Text style={{ fontSize: 48, fontWeight: '900', color: c.label, fontVariant: ['tabular-nums'] }}>{fmt(n.kcal)}</Text>
+        <Text style={{ fontSize: 48, fontWeight: '700', color: c.label, fontVariant: ['tabular-nums'] }}>{fmt(n.kcal)}</Text>
         <T variant="bodyB" color={c.label2}>kcal</T>
       </View>
       <Card style={{ gap: 10 }}>

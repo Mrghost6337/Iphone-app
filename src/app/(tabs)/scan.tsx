@@ -6,7 +6,7 @@ import React, { useCallback, useRef, useState } from 'react';
 import { ActivityIndicator, Linking, Pressable, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIsland } from '@/components/Island';
-import { GradientButton, Icon, haptic } from '@/components/ui';
+import { Button, Icon, haptic } from '@/components/ui';
 import { AIError, recognizeMeal } from '@/lib/ai';
 import { fmt, parseDescription, scaled, suggestedMeal } from '@/lib/nutrition';
 import { productByBarcode } from '@/lib/openfoodfacts';
@@ -117,9 +117,9 @@ export default function Scan() {
       {needsCamera && permission && !permission.granted ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 16 }}>
           <Icon name="camera.fill" size={48} color="#fff" />
-          <Text style={{ color: '#fff', fontSize: 22, fontWeight: '800', textAlign: 'center' }}>Camera nodig om te scannen</Text>
+          <Text style={{ color: '#fff', fontSize: 22, fontWeight: '700', textAlign: 'center' }}>Camera nodig om te scannen</Text>
           <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 16, textAlign: 'center' }}>Bord gebruikt de camera alleen als jij scant.</Text>
-          <GradientButton title={permission.canAskAgain ? 'Geef toegang' : 'Open Instellingen'} onPress={() => (permission.canAskAgain ? requestPermission() : Linking.openSettings())} style={{ alignSelf: 'stretch' }} />
+          <Button title={permission.canAskAgain ? 'Geef toegang' : 'Open Instellingen'} onPress={() => (permission.canAskAgain ? requestPermission() : Linking.openSettings())} style={{ alignSelf: 'stretch' }} />
         </View>
       ) : null}
 
@@ -136,14 +136,14 @@ export default function Scan() {
 
       {mode === 'describe' ? (
         <View style={{ flex: 1, paddingTop: insets.top + 70, paddingHorizontal: 24, gap: 16, backgroundColor: '#0b0908' }}>
-          <Text style={{ color: '#fff', fontSize: 30, fontWeight: '800' }}>Wat heb je gegeten?</Text>
+          <Text style={{ color: '#fff', fontSize: 30, fontWeight: '700' }}>Wat heb je gegeten?</Text>
           <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 15.5 }}>Typ het gewoon. Bord splitst het op in producten en hoeveelheden.</Text>
           <TextInput value={text} onChangeText={setText} multiline placeholder="Bijv. 2 boterhammen met kaas en een appel" placeholderTextColor="rgba(255,255,255,0.4)"
             style={{ minHeight: 120, borderRadius: 18, padding: 16, fontSize: 17, color: '#fff', backgroundColor: 'rgba(255,255,255,0.1)', textAlignVertical: 'top' }} />
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-            {EXAMPLES.map(e => <Pressable key={e} onPress={() => setText(e)} style={{ paddingHorizontal: 13, paddingVertical: 8, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.12)' }}><Text style={{ color: '#fff', fontSize: 13.5 }}>{e}</Text></Pressable>)}
+            {EXAMPLES.map(e => <Pressable accessibilityRole="button" key={e} onPress={() => setText(e)} style={{ paddingHorizontal: 13, paddingVertical: 8, borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.12)' }}><Text style={{ color: '#fff', fontSize: 13.5 }}>{e}</Text></Pressable>)}
           </View>
-          <GradientButton title="Analyseer" icon="sparkles" onPress={describe} disabled={text.trim().length < 2} />
+          <Button title="Analyseer" icon="sparkles" onPress={describe} disabled={text.trim().length < 2} />
         </View>
       ) : null}
 

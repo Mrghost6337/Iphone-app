@@ -1,4 +1,5 @@
 import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 import { FOODS, Food, Recognized, norm, searchFoods, uid } from './nutrition';
 
 /**
@@ -8,8 +9,10 @@ import { FOODS, Food, Recognized, norm, searchFoods, uid } from './nutrition';
  * call behind your own server.
  */
 const KEY_NAME = 'anthropic_api_key';
-export const getApiKey = () => SecureStore.getItemAsync(KEY_NAME);
-export const setApiKey = (k: string) => (k ? SecureStore.setItemAsync(KEY_NAME, k.trim()) : SecureStore.deleteItemAsync(KEY_NAME));
+// SecureStore has no web implementation; the web build is only a preview, so it simply has no key.
+const web = Platform.OS === 'web';
+export const getApiKey = async () => (web ? null : SecureStore.getItemAsync(KEY_NAME));
+export const setApiKey = async (k: string) => { if (web) return; await (k ? SecureStore.setItemAsync(KEY_NAME, k.trim()) : SecureStore.deleteItemAsync(KEY_NAME)); };
 
 const SCHEMA = {
   type: 'object',

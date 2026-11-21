@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useIsland } from '@/components/Island';
-import { Card, Chip, GradientButton, Stepper, T } from '@/components/ui';
+import { Card, Chip, Button, Stepper, T } from '@/components/ui';
 import { MEALS, Meal, fmt, sameDay, scaled, suggestedMeal, sumEntries, targets } from '@/lib/nutrition';
 import { scanSession } from '@/lib/session';
 import { useStore } from '@/lib/store';
@@ -29,7 +29,7 @@ export default function Amount() {
     <ScrollView contentContainerStyle={{ padding: space.l, gap: space.l, paddingTop: space.xl }}>
       <View style={{ alignItems: 'center', gap: 4 }}>
         <T variant="h2" style={{ textAlign: 'center' }}>{f.name}</T>
-        <Text style={{ fontSize: 52, fontWeight: '900', color: c.label, fontVariant: ['tabular-nums'] }}>{fmt(n.kcal)}</Text>
+        <Text style={{ fontSize: 52, fontWeight: '700', color: c.label, fontVariant: ['tabular-nums'] }}>{fmt(n.kcal)}</Text>
         <T variant="bodyB" color={c.label2}>kcal · {fmt(grams)} g</T>
         <T variant="sub" color={c.label2}>Eiwit {fmt(n.protein)} g · Koolh. {fmt(n.carbs)} g · Vet {fmt(n.fat)} g</T>
       </View>
@@ -48,7 +48,7 @@ export default function Amount() {
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
         {MEALS.map(m => <Chip key={m.id} title={m.title} on={meal === m.id} onPress={() => setMeal(m.id)} />)}
       </ScrollView>
-      <GradientButton title="Voeg toe" right={`${fmt(n.kcal)} kcal`} onPress={add} />
+      <Button title="Voeg toe" right={`${fmt(n.kcal)} kcal`} onPress={add} />
       <T variant="sub" color={c.label2}>Bron: {f.id.startsWith('off:') ? 'Open Food Facts' : 'referentiewaarden (USDA/NEVO)'} · {fmt(f.per100.kcal)} kcal per 100 g</T>
     </ScrollView>
   );

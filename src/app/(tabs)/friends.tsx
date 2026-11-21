@@ -4,7 +4,7 @@ import React, { useMemo, useRef, useState } from 'react';
 import { Alert, Modal, ScrollView, Share, Text, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Avatar, Card, Divider, GradientButton, Icon, IconButton, PillButton, Row, T, haptic } from '@/components/ui';
+import { Avatar, Card, Divider, Button, Icon, IconButton, PillButton, Row, T, haptic } from '@/components/ui';
 import { myCode, parseCode } from '@/lib/friendcode';
 import { fmt, targets } from '@/lib/nutrition';
 import { points } from '@/lib/points';
@@ -49,8 +49,8 @@ export default function Friends() {
       </View>
 
       <View style={{ flexDirection: 'row', gap: 10, marginHorizontal: space.l, marginBottom: space.xl }}>
-        <GradientButton title="Mijn code" icon="qrcode" onPress={() => setShowQR(true)} style={{ flex: 1 }} />
-        <PillButton title="Scan vriend" icon="qrcode.viewfinder" tone="plain" onPress={() => setScanning(true)} style={{ flex: 1, height: 58, borderRadius: 29 }} />
+        <Button title="Mijn code" icon="qrcode" onPress={() => setShowQR(true)} style={{ flex: 1 }} />
+        <PillButton title="Scan vriend" icon="qrcode.viewfinder" tone="plain" onPress={() => setScanning(true)} style={{ flex: 1, height: 54, borderRadius: 27 }} />
       </View>
 
       <View style={{ marginHorizontal: space.l, marginBottom: space.xl, gap: 10 }}>
@@ -60,13 +60,13 @@ export default function Friends() {
             <View key={f.id}>
               {i ? <Divider inset={60} /> : null}
               <Row onPress={f.me ? undefined : () => setOpen(open === f.id ? null : f.id)} label={`${i + 1}e ${f.name}, ${f.week} punten`}>
-                <Text style={{ width: 26, textAlign: 'center', fontSize: 18, fontWeight: '900', color: i === 0 ? '#E0A800' : i === 1 ? '#9AA4AE' : i === 2 ? '#C77B3F' : c.label }}>{i + 1}</Text>
+                <Text style={{ width: 26, textAlign: 'center', fontSize: 18, fontWeight: '700', color: i === 0 ? '#E0A800' : i === 1 ? '#9AA4AE' : i === 2 ? '#C77B3F' : c.label }}>{i + 1}</Text>
                 <Avatar name={f.name} photo={f.me ? p.photo : null} size={40} />
                 <View style={{ flex: 1 }}>
                   <T variant="bodyB">{f.name}{f.me ? ' (jij)' : ''}</T>
                   <T variant="sub" color={c.label2}>{f.streak} dagen reeks{f.me ? '' : ` · bijgewerkt ${new Date((f as { updatedAt?: number }).updatedAt ?? 0).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}`}</T>
                 </View>
-                <Text style={{ fontSize: 20, fontWeight: '900', color: c.label, fontVariant: ['tabular-nums'] }}>{fmt(f.week)}<Text style={{ fontSize: 12, color: c.label2 }}> pnt</Text></Text>
+                <Text style={{ fontSize: 20, fontWeight: '700', color: c.label, fontVariant: ['tabular-nums'] }}>{fmt(f.week)}<Text style={{ fontSize: 12, color: c.label2 }}> pnt</Text></Text>
               </Row>
               {open === f.id && !f.me ? (
                 <View style={{ paddingHorizontal: 16, paddingBottom: 14, gap: 8 }}>

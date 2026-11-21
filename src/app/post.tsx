@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Field } from '@/components/Field';
-import { Card, Chip, GradientButton, Icon, PillButton, Row, Stepper, T, haptic } from '@/components/ui';
+import { Card, Chip, Button, Icon, PillButton, Row, Stepper, T, haptic } from '@/components/ui';
 import { useStore } from '@/lib/store';
 import { radius, space, useColors } from '@/lib/theme';
 
@@ -71,7 +71,7 @@ export default function PostEditor() {
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           {TAGS.map(t => <Chip key={t} title={t} on={tags.includes(t)} onPress={() => setTags(x => (x.includes(t) ? x.filter(y => y !== t) : [...x, t]))} />)}
         </View>
-        <GradientButton title="Plaats recept" onPress={publish} disabled={!ok} />
+        <Button title="Plaats recept" onPress={publish} disabled={!ok} />
         <T variant="sub" color={c.label2}>Je recept staat in “Mijn recepten” op dit toestel. Delen met vrienden vraagt een server (zie README). Deel alleen foto’s die je zelf hebt gemaakt.</T>
       </ScrollView>
     </View>

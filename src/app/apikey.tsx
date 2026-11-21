@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Linking, TextInput, View } from 'react-native';
-import { GradientButton, PillButton, T } from '@/components/ui';
+import { Button, PillButton, T } from '@/components/ui';
 import { getApiKey, setApiKey } from '@/lib/ai';
 import { radius, space, useColors } from '@/lib/theme';
 
@@ -19,7 +19,7 @@ export default function ApiKey() {
       </T>
       <TextInput value={key} onChangeText={setKey} placeholder={has ? 'Sleutel is ingesteld · plak een nieuwe om te vervangen' : 'sk-ant-…'} placeholderTextColor={c.label3}
         autoCapitalize="none" autoCorrect={false} secureTextEntry style={{ backgroundColor: c.card, borderRadius: radius.m, padding: 16, fontSize: 16, color: c.label }} accessibilityLabel="API-sleutel" />
-      <GradientButton title="Bewaar sleutel" disabled={key.trim().length < 20} onPress={async () => { await setApiKey(key); router.back(); }} />
+      <Button title="Bewaar sleutel" disabled={key.trim().length < 20} onPress={async () => { await setApiKey(key); router.back(); }} />
       <View style={{ flexDirection: 'row', gap: 10 }}>
         <PillButton title="Sleutel aanmaken" icon="arrow.up.right" tone="plain" style={{ flex: 1 }} onPress={() => Linking.openURL('https://platform.claude.com/settings/keys')} />
         {has ? <PillButton title="Verwijder" icon="trash" tone="danger" style={{ flex: 1 }} onPress={async () => { await setApiKey(''); setHas(false); }} /> : null}

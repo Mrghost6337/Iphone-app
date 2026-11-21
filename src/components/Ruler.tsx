@@ -57,13 +57,13 @@ export function Ruler({ value, min, max, step, labelEvery, onChange, label }: { 
             return (
               <View style={{ width: TICK, alignItems: 'center', paddingTop: 14, overflow: 'visible' }}>
                 <View style={{ width: 2, borderRadius: 1, height: major ? 40 : half ? 28 : 18, backgroundColor: major ? c.label : half ? c.label2 : c.label3 }} />
-                {major ? <Text numberOfLines={1} style={{ position: 'absolute', top: 60, left: (TICK - 40) / 2, width: 40, textAlign: 'center', fontSize: 12, fontWeight: '700', color: c.label2 }}>{Math.round(item)}</Text> : null}
+                {major ? <Text style={{ position: 'absolute', top: 60, left: (TICK - 40) / 2, width: 40, textAlign: 'center', fontSize: 12, fontWeight: '700', color: c.label2 }}>{Math.round(item)}</Text> : null}
               </View>
             );
           }}
         />
       )}
-      <LinearGradient pointerEvents="none" colors={[c.accent, c.accent2]} style={{ position: 'absolute', left: width / 2 - 2, top: 8, width: 4, height: 54, borderRadius: 2 }} />
+      <View pointerEvents="none" style={{ position: 'absolute', left: width / 2 - 1.5, top: 8, width: 3, height: 54, borderRadius: 1.5, backgroundColor: c.accent }} />
       <LinearGradient pointerEvents="none" colors={[c.card, 'transparent']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 60 }} />
       <LinearGradient pointerEvents="none" colors={['transparent', c.card]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 60 }} />
     </View>

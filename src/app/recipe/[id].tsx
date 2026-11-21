@@ -1,9 +1,9 @@
 import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Pressable, ScrollView, Share, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, Share, Text, TextInput, View, Alert } from 'react-native';
 import { useIsland } from '@/components/Island';
-import { Avatar, Bar, Card, Divider, GradientButton, Icon, IconButton, PillButton, Stepper, T, haptic, hexA } from '@/components/ui';
+import { Avatar, Bar, Card, Divider, Button, Icon, IconButton, PillButton, Stepper, T, haptic, hexA } from '@/components/ui';
 import { cancelTimer, scheduleTimer } from '@/lib/notifications';
 import { fmt, mealTitle, nowMs, suggestedMeal } from '@/lib/nutrition';
 import { RECIPES, allergenHits, postToRecipe, scaleText } from '@/lib/recipes';
@@ -68,18 +68,15 @@ export default function RecipeDetail() {
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
             <Avatar name={r.author} size={28} /><T variant="bodyB">{r.author}</T>
           </View>
-          {r.credit ? <T variant="cap" color={c.label2} style={{ fontWeight: '500' }}>Foto: {r.credit.artist}, {r.credit.license} (Wikimedia Commons)</T> : null}
         </View>
         {hits.length ? (
           <Card style={{ flexDirection: 'row', gap: 10, alignItems: 'center', backgroundColor: hexA(c.warn, 0.12) }}>
             <Icon name="exclamationmark.shield.fill" size={22} color={c.warn} /><T variant="bodyB" color={c.warn} style={{ flex: 1 }}>Bevat {hits.join(', ')}, waar je allergisch voor bent</T>
           </Card>
         ) : null}
-        <View style={{ flexDirection: 'row', gap: 8 }}>
-          {[[String(r.minutes), 'minuten'], [fmt(r.per.kcal), 'kcal p.p.'], [r.per.protein ? fmt(r.per.protein) : '–', 'g eiwit'], [r.difficulty, 'niveau']].map(([v, l]) => (
-            <Card key={l} style={{ flex: 1, alignItems: 'center', padding: 10 }}><T variant="h3" numberOfLines={1} adjustsFontSizeToFit>{v}</T><T variant="cap" color={c.label2}>{l}</T></Card>
-          ))}
-        </View>
+        <T variant="body" color={c.label2}>
+          <Text style={{ color: c.label, fontWeight: '600' }}>{r.minutes} minuten</Text> · {fmt(r.per.kcal)} kcal per portie{r.per.protein ? ` · ${fmt(r.per.protein)} g eiwit` : ''} · {r.difficulty.toLowerCase()}
+        </T>
         <View style={{ flexDirection: 'row', gap: 8 }}>
           <PillButton style={{ flex: 1 }} tone={s.liked ? 'soft' : 'plain'} icon={s.liked ? 'heart.fill' : 'heart'} title={s.liked ? 'Leuk' : 'Like'} onPress={() => patch(x => { x.liked = !x.liked; })} />
           <PillButton style={{ flex: 1 }} tone={s.fav ? 'soft' : 'plain'} icon={s.fav ? 'bookmark.fill' : 'bookmark'} title="Bewaar" onPress={() => patch(x => { x.fav = !x.fav; })} />
@@ -119,7 +116,7 @@ export default function RecipeDetail() {
                   <View style={{ flexDirection: 'row', gap: 14, padding: 16 }}>
                     <Pressable onPress={() => { haptic.light(); patch(x => { x.steps = toggleIn(steps, i); }); }} accessibilityRole="checkbox" accessibilityState={{ checked: done }} accessibilityLabel={`Stap ${i + 1}`}
                       style={{ width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: done ? c.good : hexA(c.accent, 0.14) }}>
-                      {done ? <Icon name="checkmark" size={15} color="#fff" /> : <Text style={{ color: c.accent, fontWeight: '900' }}>{i + 1}</Text>}
+                      {done ? <Icon name="checkmark" size={15} color="#fff" /> : <Text style={{ color: c.accent, fontWeight: '700' }}>{i + 1}</Text>}
                     </Pressable>
                     <View style={{ flex: 1, gap: 8 }}>
                       <T variant="body" color={done ? c.label2 : c.label} style={{ textDecorationLine: done ? 'line-through' : 'none' }}>{st.text}</T>
@@ -135,7 +132,7 @@ export default function RecipeDetail() {
           </Card>
         </View>
 
-        <GradientButton title="Log 1 portie" icon="plus.circle.fill" right={`${fmt(r.per.kcal)} kcal`} onPress={log} />
+        <Button title="Log 1 portie" icon="plus.circle.fill" right={`${fmt(r.per.kcal)} kcal`} onPress={log} />
 
         <View style={{ gap: 10 }}>
           <T variant="title">Reacties</T>
@@ -146,8 +143,8 @@ export default function RecipeDetail() {
                 <View style={{ flexDirection: 'row', gap: 10, padding: 14 }}>
                   <Avatar name={cm.author} photo={state.profile.photo} size={34} />
                   <View style={{ flex: 1 }}>
-                    <T variant="sub"><Text style={{ fontWeight: '800' }}>{cm.author}</Text> {cm.text}</T>
-                    <Pressable onPress={() => update(st => { st.comments = st.comments.filter(x => x.id !== cm.id); })}><T variant="cap" color={c.label2}>{new Date(cm.at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })} · Verwijder</T></Pressable>
+                    <T variant="sub"><Text style={{ fontWeight: '700' }}>{cm.author}</Text> {cm.text}</T>
+                    <Pressable accessibilityRole="button" accessibilityLabel="Reactie verwijderen" hitSlop={8} onPress={() => Alert.alert('Reactie verwijderen?', undefined, [{ text: 'Annuleer', style: 'cancel' }, { text: 'Verwijder', style: 'destructive', onPress: () => update(st => { st.comments = st.comments.filter(x => x.id !== cm.id); }) }])}><T variant="cap" color={c.label2}>{new Date(cm.at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })} · Verwijder</T></Pressable>
                   </View>
                 </View>
               </View>
@@ -160,6 +157,7 @@ export default function RecipeDetail() {
           </Card>
         </View>
       </View>
+    {r.credit ? <T variant="cap" color={c.label3} style={{ fontWeight: '400', paddingHorizontal: 20, paddingBottom: 24 }}>Foto: {r.credit.artist}, {r.credit.license}, via Wikimedia Commons</T> : null}
     </ScrollView>
   );
 }

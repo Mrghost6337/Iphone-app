@@ -5,7 +5,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIsland } from '@/components/Island';
-import { Card, Chip, GradientButton, Icon, IconButton, PillButton, Row, Stepper, T, hexA } from '@/components/ui';
+import { Card, Chip, Button, Icon, IconButton, PillButton, Row, Stepper, T, hexA } from '@/components/ui';
 import { MEALS, Recognized, fmt, mealTitle, scaled, sumEntries, targets, sameDay, ZERO, add } from '@/lib/nutrition';
 import { clearScan, scanSession, setPickFor, setScanFoods, setScanMeal } from '@/lib/session';
 import { useStore } from '@/lib/store';
@@ -52,7 +52,7 @@ export default function Review() {
           <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', paddingHorizontal: 4 }}>
             <View>
               <T variant="sub" color={c.label2}>{foods.length} {foods.length > 1 ? 'onderdelen' : 'onderdeel'} herkend</T>
-              <Text style={{ fontSize: 44, fontWeight: '900', color: c.label, fontVariant: ['tabular-nums'] }}>{fmt(tot.kcal)} <Text style={{ fontSize: 16, color: c.label2 }}>kcal</Text></Text>
+              <Text style={{ fontSize: 44, fontWeight: '700', color: c.label, fontVariant: ['tabular-nums'] }}>{fmt(tot.kcal)} <Text style={{ fontSize: 16, color: c.label2 }}>kcal</Text></Text>
             </View>
             <T variant="sub" color={c.label2}>E {fmt(tot.protein)} · K {fmt(tot.carbs)} · V {fmt(tot.fat)}</T>
           </View>
@@ -76,7 +76,7 @@ export default function Review() {
                   </View>
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
-                  <Text style={{ fontSize: 26, fontWeight: '900', color: c.label, fontVariant: ['tabular-nums'] }}>{fmt(n.kcal)}</Text>
+                  <Text style={{ fontSize: 26, fontWeight: '700', color: c.label, fontVariant: ['tabular-nums'] }}>{fmt(n.kcal)}</Text>
                   <T variant="cap" color={c.label2}>kcal</T>
                 </View>
               </View>
@@ -100,7 +100,7 @@ export default function Review() {
                   <T variant="cap" color={c.label2}>Klopt niet? Is het…</T>
                   <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
                     {f.alts.map(a => (
-                      <Pressable key={a.id} onPress={() => setF(f.uid, { item: a, grams: a.portionGrams, conf: 1, alts: [f.item, ...f.alts.filter(x => x.id !== a.id)].filter(x => !x.ai) })}
+                      <Pressable accessibilityRole="button" key={a.id} onPress={() => setF(f.uid, { item: a, grams: a.portionGrams, conf: 1, alts: [f.item, ...f.alts.filter(x => x.id !== a.id)].filter(x => !x.ai) })}
                         style={{ paddingHorizontal: 13, paddingVertical: 9, borderRadius: 999, borderWidth: 1.5, borderColor: c.sep }}>
                         <T variant="sub">{a.name}</T>
                       </Pressable>
@@ -123,7 +123,7 @@ export default function Review() {
       </ScrollView>
       {foods.length ? (
         <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: space.l, paddingBottom: insets.bottom + 10, backgroundColor: hexA(c.bg, 0.92) }}>
-          <GradientButton title={`Voeg toe aan ${mealTitle(meal).toLowerCase()}`} right={`${fmt(tot.kcal)} kcal`} onPress={save} />
+          <Button title={`Voeg toe aan ${mealTitle(meal).toLowerCase()}`} right={`${fmt(tot.kcal)} kcal`} onPress={save} />
         </View>
       ) : null}
     </View>

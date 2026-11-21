@@ -1,17 +1,17 @@
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
-import { LinearGradient } from 'expo-linear-gradient';
+import { Image } from 'expo-image';
 import React, { useEffect, useMemo, useState } from 'react';
 import { KeyboardAvoidingView, Pressable, ScrollView, Switch, Text, View } from 'react-native';
-import Animated, { FadeIn, SlideInLeft, SlideInRight } from 'react-native-reanimated';
+import Animated, { Easing, FadeIn, FadeInLeft, FadeInRight } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ruler } from '@/components/Ruler';
-import { Avatar, Card, Chip, ChoiceRow, GradientButton, Icon, IconBadge, IconButton, Ring, T, Tile, haptic, hexA } from '@/components/ui';
+import { Avatar, Card, Chip, ChoiceRow, Button, Icon, IconBadge, IconButton, T, Tile, haptic } from '@/components/ui';
 import { ACTIVITIES, ALLERGENS, DIETS, GOALS, MEALS, MOTIVES, OBSTACLES, Profile, age, changesWeight, energyGoal, fmt, kg1, suggestedActivity, targets, weeksToGoal, nowMs } from '@/lib/nutrition';
 import { scheduleMealReminders } from '@/lib/notifications';
 import { Field } from '@/components/Field';
 import { useStore } from '@/lib/store';
-import { radius, space, useColors } from '@/lib/theme';
+import { curve, space, useColors } from '@/lib/theme';
 
 const STEPS = ['welcome', 'name', 'goal', 'sex', 'birthday', 'height', 'weight', 'target', 'workouts', 'activity', 'diet', 'allergies',
   'meals', 'cook', 'motives', 'obstacles', 'reminders', 'privacy', 'calc', 'plan'] as const;
@@ -44,21 +44,23 @@ export default function Onboarding() {
   };
 
   const qi = QUESTIONS.indexOf(step as never);
-  const entering = dir > 0 ? SlideInRight.springify().damping(20) : SlideInLeft.springify().damping(20);
+  // A short directional fade (24pt, 240 ms, ease-out) instead of a full-screen spring: the step changes, the eye stays put.
+  // Reanimated drops the movement automatically when Reduce Motion is on.
+  const ease = Easing.bezier(...curve.out);
+  const entering = (dir > 0 ? FadeInRight : FadeInLeft).duration(240).easing(ease);
 
   return (
     <KeyboardAvoidingView behavior="padding" style={{ flex: 1, backgroundColor: c.bg }}>
-      <LinearGradient colors={[hexA(c.accent, 0.22), hexA(c.accent2, 0.06), c.bg]} locations={[0, 0.35, 0.7]} style={{ position: 'absolute', inset: 0 }} />
       <View style={{ paddingTop: insets.top + 6 }}>
         {step !== 'welcome' && step !== 'calc' ? (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: space.l, height: 48 }}>
             <IconButton icon="chevron.left" label="Terug" onPress={() => go(-1)} />
             {qi >= 0 ? (
-              <View style={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: c.fill, overflow: 'hidden' }} accessibilityRole="progressbar" accessibilityValue={{ min: 0, max: QUESTIONS.length, now: qi + 1 }}>
-                <LinearGradient colors={[c.accent, c.accent2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ width: `${((qi + 1) / QUESTIONS.length) * 100}%`, height: 6 }} />
+              <View style={{ flex: 1, height: 4, borderRadius: 2, backgroundColor: c.fill, overflow: 'hidden' }} accessibilityRole="progressbar" accessibilityLabel={`Vraag ${qi + 1} van ${QUESTIONS.length}`} accessibilityValue={{ min: 0, max: QUESTIONS.length, now: qi + 1 }}>
+                <View style={{ width: `${((qi + 1) / QUESTIONS.length) * 100}%`, height: 4, borderRadius: 2, backgroundColor: c.accent }} />
               </View>
             ) : <View style={{ flex: 1 }} />}
-            {SKIPPABLE(step) ? <Pressable onPress={() => go(1)} hitSlop={10}><T variant="bodyB" color={c.label2}>Sla over</T></Pressable> : null}
+            {SKIPPABLE(step) ? <Pressable accessibilityRole="button" onPress={() => go(1)} hitSlop={12} style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}><T variant="body" color={c.label2}>Sla over</T></Pressable> : null}
           </View>
         ) : null}
       </View>
@@ -81,7 +83,7 @@ function Page({ title, sub, children, button = 'Ga verder', onNext, disabled, bo
         {children}
       </ScrollView>
       <View style={{ paddingHorizontal: space.xl, paddingBottom: Math.max(bottom, 16) + 8, paddingTop: 8 }}>
-        <GradientButton title={button} onPress={onNext} disabled={disabled} />
+        <Button title={button} onPress={onNext} disabled={disabled} />
       </View>
     </View>
   );
@@ -91,8 +93,8 @@ function Big({ value, unit }: { value: string; unit: string }) {
   const c = useColors();
   return (
     <View style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'center', gap: 6 }}>
-      <Text style={{ fontSize: 64, fontWeight: '900', color: c.label, fontVariant: ['tabular-nums'] }} accessibilityLabel={`${value} ${unit}`}>{value}</Text>
-      <Text style={{ fontSize: 22, fontWeight: '700', color: c.label2 }}>{unit}</Text>
+      <Text style={{ fontSize: 64, fontWeight: '700', letterSpacing: -1.8, color: c.label, fontVariant: ['tabular-nums'] }} accessibilityLabel={`${value} ${unit}`}>{value}</Text>
+      <Text style={{ fontSize: 22, fontWeight: '600', color: c.label2 }}>{unit}</Text>
     </View>
   );
 }
@@ -105,15 +107,16 @@ function StepView({ step, p, set, next, finish, bottom }: { step: Step; p: Profi
   switch (step) {
     case 'welcome':
       return (
-        <View style={{ flex: 1, justifyContent: 'center', padding: space.xl, gap: 26 }}>
-          <Animated.View entering={FadeIn.duration(900)} style={{ alignItems: 'center' }}>
-            <Ring size={170} stroke={18} progress={0.74}><Icon name="camera.fill" size={52} color={c.accent} /></Ring>
+        <View style={{ flex: 1 }}>
+          <Animated.View entering={FadeIn.duration(400)} style={{ flex: 1 }}>
+            <Image source={require('../../assets/recipes/poke.jpg')} style={{ flex: 1 }} contentFit="cover" accessibilityIgnoresInvertColors
+              accessible accessibilityLabel="Een pokébowl met zalm, rijst, avocado en edamame" />
           </Animated.View>
-          <T variant="large" style={{ textAlign: 'center', fontSize: 36 }}>Fotografeer je eten.{'\n'}Bord doet de rest.</T>
-          <T variant="body" color={c.label2} style={{ textAlign: 'center' }}>Calorieën en macro’s in één foto, recepten die je stap voor stap volgt, en vrienden die je motiveren.</T>
-          <View style={{ marginTop: 20, gap: 12, paddingBottom: bottom }}>
-            <GradientButton title="Maak je plan" onPress={next} />
-            <T variant="sub" color={c.label2} style={{ textAlign: 'center' }}>Duurt ongeveer 2 minuten</T>
+          <View style={{ paddingHorizontal: space.xl, paddingTop: 28, gap: 12, paddingBottom: Math.max(bottom, 16) + 8, backgroundColor: c.bg }}>
+            <T variant="large" accessibilityRole="header">Maak een foto en zie wat je eet</T>
+            <T variant="body" color={c.label2}>Bord herkent je maaltijd, zoekt elk onderdeel op in de voedingsdatabase en telt kcal, eiwit, koolhydraten en vet. Klopt iets niet, dan pas je het met één tik aan.</T>
+            <Button title="Maak je plan" onPress={next} style={{ marginTop: 16 }} />
+            <T variant="sub" color={c.label2} style={{ textAlign: 'center' }}>Hooguit 17 korte vragen, ongeveer 2 minuten</T>
           </View>
         </View>
       );
@@ -130,7 +133,7 @@ function StepView({ step, p, set, next, finish, bottom }: { step: Step; p: Profi
               <Icon name="camera.fill" size={15} color="#fff" />
             </View>
           </Pressable>
-          {p.photo ? <Pressable onPress={() => set({ photo: null })} style={{ alignSelf: 'center' }}><T variant="bodyB" color={c.warn}>Foto verwijderen</T></Pressable> : null}
+          {p.photo ? <Pressable accessibilityRole="button" hitSlop={8} onPress={() => set({ photo: null })} style={{ alignSelf: 'center' }}><T variant="bodyB" color={c.warn}>Foto verwijderen</T></Pressable> : null}
           <Field value={p.name} onChange={v => set({ name: v })} placeholder="Voornaam" textContentType="givenName" autoFocus />
           <Field value={p.email} onChange={v => set({ email: v.trim() })} placeholder="E-mail (optioneel)" keyboardType="email-address" textContentType="emailAddress" />
         </Page>
@@ -270,7 +273,7 @@ function StepView({ step, p, set, next, finish, bottom }: { step: Step; p: Profi
         <Page title="Zullen we je herinneren?" sub="Een zacht seintje rond je eetmomenten. Altijd uit te zetten." onNext={next} bottom={bottom}>
           <Card pad={false}>
             <View style={{ flexDirection: 'row', alignItems: 'center', padding: 16, gap: 12 }}>
-              <IconBadge icon="bell.fill" size={34} />
+              <IconBadge icon="bell" />
               <T variant="bodyB" style={{ flex: 1 }}>Herinneringen</T>
               <Switch value={p.remindersOn} onValueChange={v => set({ remindersOn: v })} trackColor={{ true: c.good }} />
             </View>
@@ -297,7 +300,7 @@ function StepView({ step, p, set, next, finish, bottom }: { step: Step; p: Profi
             ['hand.raised', 'Geen reclame, geen tracking', 'Exporteer of verwijder je gegevens wanneer je wilt.'],
             ['stethoscope', 'Geen medisch advies', 'Bord geeft schattingen. Bij een aandoening, zwangerschap of eetstoornis: overleg met een arts of diëtist.']].map(([icon, title, text]) => (
             <View key={title} style={{ flexDirection: 'row', gap: 16 }}>
-              <IconBadge icon={icon} on size={46} />
+              <IconBadge icon={icon} on size={30} />
               <View style={{ flex: 1, gap: 2 }}><T variant="h3">{title}</T><T variant="sub" color={c.label2}>{text}</T></View>
             </View>
           ))}
@@ -310,11 +313,11 @@ function StepView({ step, p, set, next, finish, bottom }: { step: Step; p: Profi
       return (
         <Page title={`Je plan, ${p.name || 'jij'}`} sub="Berekend met de Mifflin-St Jeor-formule op basis van je antwoorden." button="Start met Bord" onNext={finish} bottom={bottom}>
           <Card style={{ alignItems: 'center', gap: 4 }}>
-            <Text style={{ fontSize: 64, fontWeight: '900', color: c.label, fontVariant: ['tabular-nums'] }}>{fmt(t.calories)}</Text>
+            <Text style={{ fontSize: 60, fontWeight: '700', letterSpacing: -1.6, color: c.label, fontVariant: ['tabular-nums'] }}>{fmt(t.calories)}</Text>
             <T variant="bodyB" color={c.label2}>kcal per dag</T>
-            <View style={{ flexDirection: 'row', gap: 8, marginTop: 14 }}>
+            <View style={{ flexDirection: 'row', gap: 16, marginTop: 16, paddingTop: 16, borderTopWidth: 0.5, borderTopColor: c.sep, alignSelf: 'stretch' }}>
               {([['Eiwit', t.protein, c.protein], ['Koolhydraten', t.carbs, c.carbs], ['Vet', t.fat, c.fat]] as const).map(([n, v, col]) => (
-                <View key={n} style={{ flex: 1, backgroundColor: c.card2, borderRadius: radius.m, padding: 12 }}>
+                <View key={n} style={{ flex: 1 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}><View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: col }} /><T variant="cap" numberOfLines={1}>{n}</T></View>
                   <T variant="num" style={{ marginTop: 4 }}>{v} g</T>
                 </View>
@@ -326,7 +329,7 @@ function StepView({ step, p, set, next, finish, bottom }: { step: Step; p: Profi
               ['leaf.fill', 'Voeding', DIETS.find(d => d.id === p.diet)!.title + (p.allergies.length ? ` · zonder ${p.allergies.join(', ')}` : '')],
               ['flame.fill', 'Verbruik (TDEE)', `${fmt(t.tdee)} kcal`], ...(weeks ? [['flag.checkered', 'Streefgewicht', `${kg1(p.target)} kg in ${weeks} weken`]] : [])].map(([icon, a, b], idx) => (
               <View key={a} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderTopWidth: idx ? 0.5 : 0, borderTopColor: c.sep }}>
-                <IconBadge icon={icon} size={32} />
+                <IconBadge icon={icon} />
                 <T variant="bodyB" style={{ flex: 1 }}>{a}</T>
                 <T variant="sub" color={c.label2} style={{ textAlign: 'right', flexShrink: 1 }}>{b}</T>
               </View>
@@ -339,25 +342,25 @@ function StepView({ step, p, set, next, finish, bottom }: { step: Step; p: Profi
   }
 }
 
+/** The plan is computed instantly; this short checklist (about 1.4 s) shows what was taken into account. No fake percentage. */
 function Calculating({ onDone }: { onDone: () => void }) {
   const c = useColors();
   const [n, setN] = useState(0);
-  const lines = ['Energieverbruik berekenen', 'Calorieën afstemmen op je doel', 'Eiwit, koolhydraten en vet verdelen', 'Recepten voor je klaarzetten'];
+  const lines = ['Energieverbruik uit lengte, gewicht, leeftijd en activiteit', 'Calorieën afgestemd op je doel en tempo', 'Eiwit, koolhydraten en vet verdeeld', 'Recepten gefilterd op je dieet en allergieën'];
   useEffect(() => {
-    const ts = lines.map((_, k) => setTimeout(() => { setN(k + 1); haptic.tap(); }, 600 * (k + 1)));
-    const done = setTimeout(onDone, 600 * lines.length + 700);
+    const ts = lines.map((_, k) => setTimeout(() => { setN(k + 1); haptic.tap(); }, 260 * (k + 1)));
+    const done = setTimeout(onDone, 260 * lines.length + 500);
     return () => { ts.forEach(clearTimeout); clearTimeout(done); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
-    <View style={{ flex: 1, justifyContent: 'center', padding: space.xl, gap: 28 }}>
-      <View style={{ alignItems: 'center' }}><Ring size={150} stroke={14} progress={n / lines.length}><T variant="title">{n * 25}%</T></Ring></View>
-      <T variant="title" style={{ textAlign: 'center' }}>Je plan wordt gemaakt</T>
-      <View style={{ gap: 14, paddingHorizontal: 12 }}>
+    <View style={{ flex: 1, justifyContent: 'center', padding: space.xl, gap: 24 }}>
+      <T variant="title" accessibilityRole="header">Je plan wordt berekend</T>
+      <View style={{ gap: 16 }} accessibilityLiveRegion="polite">
         {lines.map((l, k) => (
-          <View key={l} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, opacity: k <= n ? 1 : 0.35 }}>
-            <Icon name={k < n ? 'checkmark.circle.fill' : 'circle.dotted'} size={24} color={k < n ? c.good : c.label3} />
-            <T variant="bodyB">{l}</T>
+          <View key={l} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, opacity: k < n ? 1 : 0.3 }}>
+            <Icon name={k < n ? 'checkmark.circle.fill' : 'circle'} size={22} color={k < n ? c.accent : c.label3} weight="regular" />
+            <T variant="body" style={{ flex: 1 }}>{l}</T>
           </View>
         ))}
       </View>

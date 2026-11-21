@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Card, Chip, Glass, GradientButton, Icon, IconButton, T, haptic } from '@/components/ui';
+import { Card, Chip, Glass, Button, Icon, IconButton, T, haptic } from '@/components/ui';
 import { energyGoal, fmt } from '@/lib/nutrition';
 import { RECIPES, Recipe, allergenHits, fitsDiet, postToRecipe } from '@/lib/recipes';
 import { useStore } from '@/lib/store';
@@ -58,7 +58,7 @@ export default function Recipes() {
             <Icon name={tab === 'saved' ? 'bookmark' : 'book.pages'} size={40} color={c.label3} />
             <T variant="h3">{tab === 'saved' ? 'Nog niets opgeslagen' : tab === 'mine' ? 'Nog geen eigen recepten' : 'Geen recepten met dit filter'}</T>
             <T variant="sub" color={c.label2} style={{ textAlign: 'center' }}>{tab === 'saved' ? 'Tik op de bladwijzer bij een recept om het hier te bewaren.' : tab === 'mine' ? 'Deel je favoriete recept met een echte foto.' : 'Kies een ander filter.'}</T>
-            {tab === 'mine' ? <GradientButton title="Deel een recept" icon="plus" onPress={() => router.push('/post')} style={{ alignSelf: 'stretch' }} /> : null}
+            {tab === 'mine' ? <Button title="Deel een recept" icon="plus" onPress={() => router.push('/post')} style={{ alignSelf: 'stretch' }} /> : null}
           </Card>
         ) : list.map(r => {
           const s = state.recipes[r.id] ?? {}, hits = allergenHits(r, p.allergies);
@@ -99,7 +99,7 @@ export default function Recipes() {
 }
 
 function Badge({ text, bg = 'rgba(0,0,0,0.5)' }: { text: string; bg?: string }) {
-  return <View style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, backgroundColor: bg }}><Text style={{ color: '#fff', fontSize: 12, fontWeight: '800' }}>{text}</Text></View>;
+  return <View style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999, backgroundColor: bg }}><Text style={{ color: '#fff', fontSize: 12, fontWeight: '700' }}>{text}</Text></View>;
 }
 function Meta({ icon, text }: { icon: string; text: string }) {
   const c = useColors();

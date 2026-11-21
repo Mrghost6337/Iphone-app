@@ -14,11 +14,13 @@ import { ACTIVITIES, ALLERGENS, DIETS, GOALS, Profile, age, changesWeight, fmt, 
 import { useStore } from '@/lib/store';
 import { radius, space, useColors } from '@/lib/theme';
 
-function Label({ icon, color, title }: { icon: string; color: string; title: string }) {
+/** Settings label: a quiet SF Symbol in a fixed 28pt slot, so titles align. Red only for destructive rows. */
+function Label({ icon, title, danger }: { icon: string; title: string; danger?: boolean }) {
+  const c = useColors();
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 }}>
-      <View style={{ width: 32, height: 32, borderRadius: 9, backgroundColor: color, alignItems: 'center', justifyContent: 'center' }}><Icon name={icon} size={16} color="#fff" /></View>
-      <T variant="body">{title}</T>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
+      <View style={{ width: 28, alignItems: 'center' }}><Icon name={icon} size={19} color={danger ? c.warn : c.label2} weight="regular" /></View>
+      <T variant="body" color={danger ? c.warn : undefined} style={{ flexShrink: 0 }}>{title}</T>
     </View>
   );
 }
@@ -72,33 +74,33 @@ export default function Settings() {
             <View style={{ position: 'absolute', right: 0, bottom: 0, width: 34, height: 34, borderRadius: 17, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: c.bg }}><Icon name="camera.fill" size={14} color="#fff" /></View>
           </Pressable>
           <T variant="title">{p.name || 'Jij'}</T>
-          {p.photo ? <Pressable onPress={() => setP({ photo: null })}><T variant="bodyB" color={c.warn}>Profielfoto verwijderen</T></Pressable> : <T variant="sub" color={c.label2}>Tik op de foto om er een te kiezen</T>}
+          {p.photo ? <Pressable accessibilityRole="button" hitSlop={8} onPress={() => setP({ photo: null })}><T variant="bodyB" color={c.warn}>Profielfoto verwijderen</T></Pressable> : <T variant="sub" color={c.label2}>Tik op de foto om er een te kiezen</T>}
         </View>
 
         <Section title="Account">
-          <Row><Label icon="person.fill" color="#8E8E93" title="Naam" /><TextInput value={p.name} onChangeText={v => setP({ name: v })} style={{ color: c.label2, fontSize: 16, minWidth: 120, textAlign: 'right' }} accessibilityLabel="Naam" /></Row>
+          <Row><Label icon="person.fill" title="Naam" /><TextInput value={p.name} onChangeText={v => setP({ name: v })} style={{ color: c.label2, fontSize: 16, minWidth: 120, textAlign: 'right' }} accessibilityLabel="Naam" /></Row>
           <Divider inset={60} />
-          <Row><Label icon="envelope.fill" color="#5856D6" title="E-mail" /><TextInput value={p.email} onChangeText={v => setP({ email: v.trim() })} placeholder="Optioneel" placeholderTextColor={c.label3} keyboardType="email-address" autoCapitalize="none" style={{ color: c.label2, fontSize: 16, minWidth: 140, textAlign: 'right' }} accessibilityLabel="E-mail" /></Row>
+          <Row><Label icon="envelope.fill" title="E-mail" /><TextInput value={p.email} onChangeText={v => setP({ email: v.trim() })} placeholder="Optioneel" placeholderTextColor={c.label3} keyboardType="email-address" autoCapitalize="none" style={{ color: c.label2, fontSize: 16, minWidth: 140, textAlign: 'right' }} accessibilityLabel="E-mail" /></Row>
         </Section>
 
         <Section title="Lichaam en doelen">
-          <Row onPress={() => setOpen(open === 'goal' ? null : 'goal')} label="Doel"><Label icon="target" color={c.accent} title="Doel" /><T variant="sub" color={c.label2}>{GOALS.find(g => g.id === p.goal)!.title}</T>{chev}</Row>
+          <Row onPress={() => setOpen(open === 'goal' ? null : 'goal')} label="Doel"><Label icon="target" title="Doel" /><T variant="sub" color={c.label2}>{GOALS.find(g => g.id === p.goal)!.title}</T>{chev}</Row>
           {open === 'goal' ? <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, padding: 12 }}>{GOALS.map(g => <Chip key={g.id} title={g.title} on={p.goal === g.id} onPress={() => setP({ goal: g.id, target: changesWeight(g.id) ? p.target : p.weight })} />)}</View> : null}
           <Divider inset={60} />
-          <Row onPress={() => router.push('/weight')} label="Gewicht"><Label icon="scalemass.fill" color="#34C759" title="Gewicht" /><T variant="sub" color={c.label2}>{kg1(p.weight)} kg</T>{chev}</Row>
+          <Row onPress={() => router.push('/weight')} label="Gewicht"><Label icon="scalemass.fill" title="Gewicht" /><T variant="sub" color={c.label2}>{kg1(p.weight)} kg</T>{chev}</Row>
           <Divider inset={60} />
-          <Row onPress={() => setOpen(open === 'height' ? null : 'height')} label="Lengte"><Label icon="ruler" color="#30B0C7" title="Lengte" /><T variant="sub" color={c.label2}>{p.height} cm</T>{chev}</Row>
+          <Row onPress={() => setOpen(open === 'height' ? null : 'height')} label="Lengte"><Label icon="ruler" title="Lengte" /><T variant="sub" color={c.label2}>{p.height} cm</T>{chev}</Row>
           {open === 'height' ? <View style={{ padding: 12 }}><Ruler value={p.height} min={120} max={220} step={1} labelEvery={10} label="Lengte" onChange={v => setP({ height: v })} /></View> : null}
           {changesWeight(p.goal) ? (<>
             <Divider inset={60} />
-            <Row onPress={() => setOpen(open === 'target' ? null : 'target')} label="Streefgewicht"><Label icon="flag.checkered" color="#FF9500" title="Streefgewicht" /><T variant="sub" color={c.label2}>{kg1(p.target)} kg</T>{chev}</Row>
+            <Row onPress={() => setOpen(open === 'target' ? null : 'target')} label="Streefgewicht"><Label icon="flag.checkered" title="Streefgewicht" /><T variant="sub" color={c.label2}>{kg1(p.target)} kg</T>{chev}</Row>
             {open === 'target' ? <View style={{ padding: 12 }}><Ruler value={p.target} min={35} max={200} step={0.5} labelEvery={5} label="Streefgewicht" onChange={v => setP({ target: v })} /></View> : null}
           </>) : null}
           <Divider inset={60} />
-          <Row onPress={() => setOpen(open === 'act' ? null : 'act')} label="Activiteit"><Label icon="figure.run" color="#FF9500" title="Activiteit" /><T variant="sub" color={c.label2}>{ACTIVITIES.find(a => a.id === p.activity)!.title}</T>{chev}</Row>
+          <Row onPress={() => setOpen(open === 'act' ? null : 'act')} label="Activiteit"><Label icon="figure.run" title="Activiteit" /><T variant="sub" color={c.label2}>{ACTIVITIES.find(a => a.id === p.activity)!.title}</T>{chev}</Row>
           {open === 'act' ? <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, padding: 12 }}>{ACTIVITIES.map(a => <Chip key={a.id} title={a.title} on={p.activity === a.id} onPress={() => setP({ activity: a.id })} />)}</View> : null}
           <Divider inset={60} />
-          <Row><Label icon="flame.fill" color="#FF3B30" title="Dagelijks doel" /><T variant="bodyB">{fmt(t.calories)} kcal</T></Row>
+          <Row><Label icon="flame.fill" title="Dagelijks doel" /><T variant="bodyB">{fmt(t.calories)} kcal</T></Row>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingBottom: 12 }}>
             <T variant="sub" color={c.label2} style={{ flex: 1 }}>{p.custom ? 'Handmatig ingesteld' : `Automatisch: Mifflin-St Jeor, leeftijd ${age(p)}`}</T>
             <Stepper onMinus={() => setP({ custom: Math.max(1000, (p.custom ?? t.calories) - 50) })} onPlus={() => setP({ custom: Math.min(5000, (p.custom ?? t.calories) + 50) })} />
@@ -113,35 +115,35 @@ export default function Settings() {
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{ALLERGENS.map(a => <Chip key={a} title={a} on={p.allergies.includes(a)} onPress={() => setP({ allergies: p.allergies.includes(a) ? p.allergies.filter(x => x !== a) : [...p.allergies, a] })} />)}</View>
           </View>
           <Divider />
-          <Row><Label icon="fork.knife" color="#34C759" title={`${p.meals} maaltijden per dag`} /><Stepper onMinus={() => setP({ meals: Math.max(2, p.meals - 1) })} onPlus={() => setP({ meals: Math.min(4, p.meals + 1) })} /></Row>
+          <Row><Label icon="fork.knife" title={`${p.meals} maaltijden per dag`} /><Stepper onMinus={() => setP({ meals: Math.max(2, p.meals - 1) })} onPlus={() => setP({ meals: Math.min(4, p.meals + 1) })} /></Row>
           <Divider inset={60} />
-          <Row><Label icon="carrot.fill" color="#FF9500" title="Tussendoortjes" /><Switch value={p.snacks} onValueChange={v => setP({ snacks: v })} trackColor={{ true: c.good }} /></Row>
+          <Row><Label icon="carrot.fill" title="Tussendoortjes" /><Switch value={p.snacks} onValueChange={v => setP({ snacks: v })} trackColor={{ true: c.good }} /></Row>
         </Section>
 
         <Section title="Meldingen">
-          <Row><Label icon="bell.fill" color="#FF3B30" title="Maaltijdherinneringen" /><Switch value={p.remindersOn} onValueChange={toggleReminders} trackColor={{ true: c.good }} /></Row>
+          <Row><Label icon="bell.fill" title="Maaltijdherinneringen" /><Switch value={p.remindersOn} onValueChange={toggleReminders} trackColor={{ true: c.good }} /></Row>
           {p.remindersOn ? <T variant="sub" color={c.label2} style={{ paddingHorizontal: 16, paddingBottom: 12 }}>Om {p.reminders.breakfast}, {p.reminders.lunch} en {p.reminders.dinner}. Pas de tijden aan via de vragenlijst.</T> : null}
         </Section>
 
         <Section title="App">
-          <Row><Label icon="circle.lefthalf.filled" color="#5856D6" title="Weergave" /></Row>
+          <Row><Label icon="circle.lefthalf.filled" title="Weergave" /></Row>
           <View style={{ flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingBottom: 12 }}>
             {([['system', 'Automatisch'], ['light', 'Licht'], ['dark', 'Donker']] as const).map(([v, l]) => <Chip key={v} title={l} on={state.prefs.appearance === v} onPress={() => update(s => { s.prefs.appearance = v; })} />)}
           </View>
           <Divider inset={60} />
-          <Row><Label icon="bolt.fill" color="#FF9500" title="Energie-eenheid" /><View style={{ flexDirection: 'row', gap: 6 }}>{(['kcal', 'kJ'] as const).map(u => <Chip key={u} title={u} on={state.prefs.unit === u} onPress={() => update(s => { s.prefs.unit = u; })} />)}</View></Row>
+          <Row><Label icon="bolt.fill" title="Energie-eenheid" /><View style={{ flexDirection: 'row', gap: 6 }}>{(['kcal', 'kJ'] as const).map(u => <Chip key={u} title={u} on={state.prefs.unit === u} onPress={() => update(s => { s.prefs.unit = u; })} />)}</View></Row>
           <Divider inset={60} />
-          <Row onPress={() => router.push('/apikey')} label="AI-herkenning"><Label icon="sparkles" color={c.accent2} title="AI-herkenning (foto's)" /><T variant="sub" color={hasKey ? c.good : c.warn}>{hasKey ? 'Aan' : 'Sleutel nodig'}</T>{chev}</Row>
+          <Row onPress={() => router.push('/apikey')} label="AI-herkenning"><Label icon="sparkles" title="AI-herkenning (foto's)" /><T variant="sub" color={hasKey ? c.good : c.warn}>{hasKey ? 'Aan' : 'Sleutel nodig'}</T>{chev}</Row>
         </Section>
 
         <Section title="Privacy en gegevens">
-          <Row onPress={exportCSV} label="Exporteer als CSV"><Label icon="square.and.arrow.up" color="#007AFF" title="Exporteer als CSV" />{chev}</Row>
+          <Row onPress={exportCSV} label="Exporteer als CSV"><Label icon="square.and.arrow.up" title="Exporteer als CSV" />{chev}</Row>
           <Divider inset={60} />
-          <Row onPress={() => { Clipboard.setStringAsync(JSON.stringify(state.profile)); Alert.alert('Gekopieerd', 'Je profiel staat op het klembord.'); }} label="Kopieer profiel"><Label icon="doc.on.doc" color="#8E8E93" title="Kopieer mijn profiel" />{chev}</Row>
+          <Row onPress={() => { Clipboard.setStringAsync(JSON.stringify(state.profile)); Alert.alert('Gekopieerd', 'Je profiel staat op het klembord.'); }} label="Kopieer profiel"><Label icon="doc.on.doc" title="Kopieer mijn profiel" />{chev}</Row>
           <Divider inset={60} />
-          <Row onPress={() => router.push('/onboarding')} label="Vragenlijst opnieuw"><Label icon="arrow.counterclockwise" color="#8E8E93" title="Vragenlijst opnieuw doen" />{chev}</Row>
+          <Row onPress={() => router.push('/onboarding')} label="Vragenlijst opnieuw"><Label icon="arrow.counterclockwise" title="Vragenlijst opnieuw doen" />{chev}</Row>
           <Divider inset={60} />
-          <Row onPress={wipe} label="Alles verwijderen"><Label icon="trash.fill" color="#FF3B30" title="Alles verwijderen" /></Row>
+          <Row onPress={wipe} label="Alles verwijderen"><Label icon="trash" title="Alles verwijderen" danger /></Row>
         </Section>
 
         <Card style={{ gap: 6, backgroundColor: hexA(c.accent, 0.08) }}>

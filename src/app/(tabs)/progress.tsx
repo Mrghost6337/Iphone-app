@@ -1,14 +1,16 @@
 import { router } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle, Line, Polyline, Rect, Text as SvgText } from 'react-native-svg';
-import { Bar, Card, GradientButton, Icon, IconBadge, IconButton, T, haptic } from '@/components/ui';
+import { Bar, Card, Button, Icon, IconBadge, IconButton, T, haptic } from '@/components/ui';
 import { insights } from '@/lib/insights';
 import { changesWeight, energyGoal, fmt, kg1, lastNDays, sameDay, sumEntries, targets } from '@/lib/nutrition';
 import { points } from '@/lib/points';
 import { useStore } from '@/lib/store';
 import { space, useColors } from '@/lib/theme';
+
+const AXIS_FONT = Platform.OS === 'web' ? 'system-ui, -apple-system, sans-serif' : undefined;
 
 /** Plain-language summary first, then big numbers and clear charts. */
 export default function Progress() {
@@ -61,7 +63,7 @@ export default function Progress() {
             ['trophy.fill', 'Punten', fmt(pts.week), '', `deze week · ${fmt(pts.total)} totaal`], ['calendar', 'Reeks', String(pts.streak), pts.streak === 1 ? 'dag' : 'dagen', 'op rij gelogd']].map(([icon, k, v, u, d]) => (
             <Card key={k} style={{ flexBasis: '48%', flexGrow: 1, gap: 4 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}><Icon name={icon} size={15} color={c.label2} /><T variant="cap" color={c.label2}>{k}</T></View>
-              <Text style={{ fontSize: 30, fontWeight: '900', color: c.label, fontVariant: ['tabular-nums'] }}>{v}<Text style={{ fontSize: 13, color: c.label2 }}> {u}</Text></Text>
+              <Text style={{ fontSize: 30, fontWeight: '700', color: c.label, fontVariant: ['tabular-nums'] }}>{v}<Text style={{ fontSize: 13, color: c.label2 }}> {u}</Text></Text>
               <T variant="cap" color={c.label2} style={{ fontWeight: '500' }}>{d}</T>
             </Card>
           ))}
@@ -72,21 +74,21 @@ export default function Progress() {
           <View onLayout={e => { const lw = e.nativeEvent.layout.width; if (lw > 120) setW(lw); }} accessible accessibilityLabel={`Calorieën per dag, gemiddeld ${fmt(A.kcal)}, doel ${fmt(t.calories)}`}>
             <Svg width={w} height={H}>
               {[0, 1000, 2000, 3000, 4000].filter(v => v <= maxY).map(v => (
-                <React.Fragment key={v}><Line x1={pl} x2={w} y1={y(v)} y2={y(v)} stroke={c.sep} /><SvgText x={pl - 8} y={y(v) + 4} fill={c.label2} fontSize={11} fontWeight="600" textAnchor="end">{v ? fmt(v) : '0'}</SvgText></React.Fragment>
+                <React.Fragment key={v}><Line x1={pl} x2={w} y1={y(v)} y2={y(v)} stroke={c.sep} /><SvgText fontFamily={AXIS_FONT} x={pl - 8} y={y(v) + 4} fill={c.label2} fontSize={11} fontWeight="600" textAnchor="end">{v ? fmt(v) : '0'}</SvgText></React.Fragment>
               ))}
               {days.map((x, i) => {
                 const h = (H - pt - pb) * (x.tot.kcal / maxY);
                 return (
                   <React.Fragment key={i}>
                     <Rect x={pl + i * bw + bw * 0.16} y={H - pb - h} width={bw * 0.68} height={Math.max(h, 0)} rx={Math.min(6, bw * 0.25)} fill={x.tot.kcal > t.calories * 1.1 ? c.warn : c.accent} />
-                    {range === 7 || (range - 1 - i) % 7 === 0 ? <SvgText x={pl + i * bw + bw / 2} y={H - 8} fill={c.label2} fontSize={12} fontWeight="600" textAnchor="middle">
+                    {range === 7 || (range - 1 - i) % 7 === 0 ? <SvgText fontFamily={AXIS_FONT} x={pl + i * bw + bw / 2} y={H - 8} fill={c.label2} fontSize={12} fontWeight="600" textAnchor="middle">
                       {range === 7 ? x.d.toLocaleDateString('nl-NL', { weekday: 'short' }).replace('.', '') : `${x.d.getDate()}/${x.d.getMonth() + 1}`}</SvgText> : null}
                   </React.Fragment>
                 );
               })}
               <Line x1={pl} x2={w} y1={y(t.calories)} y2={y(t.calories)} stroke={c.label} strokeWidth={2} strokeDasharray="5 5" />
               <Rect x={w - 50} y={y(t.calories) - 20} width={50} height={18} rx={9} fill={c.label} />
-              <SvgText x={w - 25} y={y(t.calories) - 7} fill={c.bg} fontSize={11} fontWeight="800" textAnchor="middle">doel</SvgText>
+              <SvgText fontFamily={AXIS_FONT} x={w - 25} y={y(t.calories) - 7} fill={c.bg} fontSize={11} fontWeight="800" textAnchor="middle">doel</SvgText>
             </Svg>
           </View>
         </Card>
@@ -113,7 +115,7 @@ export default function Progress() {
           {last ? (
             <View style={{ flexDirection: 'row' }}>
               {[['Nu', kg1(last.kg)], ['Verschil', `${delta > 0 ? '+' : ''}${kg1(delta)}`], ...(changesWeight(p.goal) ? [['Nog te gaan', kg1(Math.abs(last.kg - p.target))]] : [])].map(([k, v]) => (
-                <View key={k} style={{ flex: 1 }}><T variant="cap" color={c.label2}>{k}</T><Text style={{ fontSize: 28, fontWeight: '900', color: c.label, fontVariant: ['tabular-nums'] }}>{v}<Text style={{ fontSize: 13, color: c.label2 }}> kg</Text></Text></View>
+                <View key={k} style={{ flex: 1 }}><T variant="cap" color={c.label2}>{k}</T><Text style={{ fontSize: 28, fontWeight: '700', color: c.label, fontVariant: ['tabular-nums'] }}>{v}<Text style={{ fontSize: 13, color: c.label2 }}> kg</Text></Text></View>
               ))}
             </View>
           ) : null}
@@ -123,19 +125,19 @@ export default function Progress() {
             const px = (d: string) => 40 + (w - 50) * ((+new Date(d) - t0) / Math.max(t1 - t0, 1)), py = (v: number) => 12 + (wh - 30) * (1 - (v - mn) / (mx - mn));
             return (
               <Svg width={w} height={wh}>
-                {[mn + 0.5, (mn + mx) / 2, mx - 0.5].map(v => <React.Fragment key={v}><Line x1={40} x2={w} y1={py(v)} y2={py(v)} stroke={c.sep} /><SvgText x={32} y={py(v) + 4} fill={c.label2} fontSize={11} textAnchor="end">{Math.round(v)}</SvgText></React.Fragment>)}
+                {[mn + 0.5, (mn + mx) / 2, mx - 0.5].map(v => <React.Fragment key={v}><Line x1={40} x2={w} y1={py(v)} y2={py(v)} stroke={c.sep} /><SvgText fontFamily={AXIS_FONT} x={32} y={py(v) + 4} fill={c.label2} fontSize={11} textAnchor="end">{Math.round(v)}</SvgText></React.Fragment>)}
                 {changesWeight(p.goal) ? <Line x1={40} x2={w} y1={py(p.target)} y2={py(p.target)} stroke={c.good} strokeWidth={2} strokeDasharray="5 5" /> : null}
                 <Polyline points={ws.map(x => `${px(x.date)},${py(x.kg)}`).join(' ')} fill="none" stroke={c.accent} strokeWidth={3} strokeLinejoin="round" strokeLinecap="round" />
                 {ws.map((x, i) => <Circle key={x.id} cx={px(x.date)} cy={py(x.kg)} r={i === ws.length - 1 ? 6 : 4} fill={c.accent} stroke={c.card} strokeWidth={2} />)}
               </Svg>
             );
           })() : <T variant="sub" color={c.label2}>Weeg jezelf 1× per week, op hetzelfde moment, voor een betrouwbare trend.</T>}
-          <GradientButton title="Gewicht invoeren" icon="scalemass" onPress={() => router.push('/weight')} />
+          <Button title="Gewicht invoeren" icon="scalemass" onPress={() => router.push('/weight')} />
         </Card>
 
         {insights(state.entries, t, p).map(x => (
           <Card key={x.id} style={{ flexDirection: 'row', gap: 14 }}>
-            <IconBadge icon={x.icon} size={40} color={x.tone === 'positive' ? c.good : x.tone === 'attention' ? c.warn : c.accent} />
+            <IconBadge icon={x.icon} size={26} color={x.tone === 'positive' ? c.good : x.tone === 'attention' ? c.warn : c.accent} />
             <View style={{ flex: 1, gap: 3 }}><T variant="h3">{x.title}</T><T variant="sub" color={c.label2}>{x.message}</T></View>
           </Card>
         ))}
