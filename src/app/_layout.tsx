@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { Appearance, useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { IslandProvider } from '@/components/Island';
+import { NotificationSync } from '@/components/NotificationSync';
 import { StoreProvider, useStore } from '@/lib/store';
 import { palette } from '@/lib/theme';
 
@@ -22,6 +23,7 @@ function Root() {
   return (
     <ThemeProvider value={theme}>
       <StatusBar style="auto" />
+      <NotificationSync />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: c.bg } }}>
         <Stack.Protected guard={state.onboarded}>
           <Stack.Screen name="(tabs)" />

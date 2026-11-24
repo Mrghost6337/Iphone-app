@@ -14,7 +14,9 @@ export type Post = {
 export type Comment = { id: string; recipeId: string; author: string; text: string; at: number };
 export type RecipeState = { fav?: boolean; liked?: boolean; reposted?: boolean; ing?: number[]; steps?: number[]; servings?: number };
 export type Friend = { id: string; name: string; week: number; total: number; streak: number; plan: { k: number; p: number; c: number; f: number; g: string }; updatedAt: number };
-export type Prefs = { appearance: 'system' | 'light' | 'dark'; unit: 'kcal' | 'kJ'; haptics: boolean; leaderboard: boolean };
+export type NotifyPrefs = { water: boolean; protein: boolean; streak: boolean; evening: boolean; weighIn: boolean; weekly: boolean };
+export const defaultNotify: NotifyPrefs = { water: true, protein: true, streak: true, evening: true, weighIn: true, weekly: true };
+export type Prefs = { appearance: 'system' | 'light' | 'dark'; unit: 'kcal' | 'kJ'; haptics: boolean; leaderboard: boolean; notify: NotifyPrefs };
 
 export type State = {
   v: 1; userId: string; onboarded: boolean; profile: Profile; entries: Entry[]; weights: Weight[]; water: Record<string, number>;
@@ -23,7 +25,7 @@ export type State = {
 
 const fresh = (): State => ({
   v: 1, userId: uid(), onboarded: false, profile: defaultProfile(), entries: [], weights: [], water: {}, recipes: {}, posts: [], comments: [], friends: [],
-  prefs: { appearance: 'system', unit: 'kcal', haptics: true, leaderboard: true },
+  prefs: { appearance: 'system', unit: 'kcal', haptics: true, leaderboard: true, notify: { ...defaultNotify } },
 });
 
 const KEY = 'bord-state-v1';
@@ -44,7 +46,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     AsyncStorage.getItem(KEY)
-      .then(raw => { if (raw) { const s = JSON.parse(raw) as State; if (s.v === 1) setState({ ...fresh(), ...s, prefs: { ...fresh().prefs, ...s.prefs } }); } })
+      .then(raw => { if (raw) { const s = JSON.parse(raw) as State; if (s.v === 1) setState({ ...fresh(), ...s, prefs: { ...fresh().prefs, ...s.prefs, notify: { ...defaultNotify, ...s.prefs?.notify } } }); } })
       .catch(() => {})
       .finally(() => setReady(true));
   }, []);

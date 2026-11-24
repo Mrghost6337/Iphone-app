@@ -9,9 +9,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ruler } from '@/components/Ruler';
 import { Avatar, Card, Chip, Divider, Icon, PillButton, Row, Stepper, T, hexA } from '@/components/ui';
 import { getApiKey } from '@/lib/ai';
-import { scheduleMealReminders } from '@/lib/notifications';
+import { NOTIFY_KINDS, ensurePermission, scheduleMealReminders } from '@/lib/notifications';
 import { ACTIVITIES, ALLERGENS, DIETS, GOALS, Profile, age, changesWeight, fmt, kg1, scaled, targets } from '@/lib/nutrition';
-import { useStore } from '@/lib/store';
+import { NotifyPrefs, useStore } from '@/lib/store';
 import { radius, space, useColors } from '@/lib/theme';
 
 /** Settings label: a quiet SF Symbol in a fixed 28pt slot, so titles align. Red only for destructive rows. */
@@ -57,6 +57,10 @@ export default function Settings() {
     setP({ remindersOn: on });
     const ok = await scheduleMealReminders({ ...p, remindersOn: on });
     if (on && !ok) { setP({ remindersOn: false }); Alert.alert('Meldingen staan uit', 'Zet meldingen voor Expo Go / Bord aan in de iOS-instellingen.'); }
+  };
+  const toggleNotify = async (key: keyof NotifyPrefs, on: boolean) => {
+    if (on && !(await ensurePermission())) { Alert.alert('Meldingen staan uit', 'Zet meldingen voor Expo Go / Bord aan in de iOS-instellingen.'); return; }
+    update(s => { s.prefs.notify[key] = on; });
   };
   const wipe = () => Alert.alert('Alles verwijderen?', 'Je maaltijden, gewichten, recepten en profiel op dit toestel worden gewist.', [
     { text: 'Annuleer', style: 'cancel' }, { text: 'Verwijder alles', style: 'destructive', onPress: () => { router.dismissAll(); reset(); } },
@@ -122,7 +126,23 @@ export default function Settings() {
 
         <Section title="Meldingen">
           <Row><Label icon="bell.fill" title="Maaltijdherinneringen" /><Switch value={p.remindersOn} onValueChange={toggleReminders} trackColor={{ true: c.good }} /></Row>
-          {p.remindersOn ? <T variant="sub" color={c.label2} style={{ paddingHorizontal: 16, paddingBottom: 12 }}>Om {p.reminders.breakfast}, {p.reminders.lunch} en {p.reminders.dinner}. Pas de tijden aan via de vragenlijst.</T> : null}
+          {p.remindersOn ? <T variant="sub" color={c.label2} style={{ paddingHorizontal: 16, paddingBottom: 12 }}>Om {p.reminders.breakfast}, {p.reminders.lunch} en {p.reminders.dinner}, alleen als je die maaltijd nog niet gelogd hebt. Pas de tijden aan via de vragenlijst.</T> : null}
+          {NOTIFY_KINDS.map(k => (
+            <View key={k.key}>
+              <Divider inset={60} />
+              <Row>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
+                  <View style={{ width: 28, alignItems: 'center' }}><Icon name={k.icon} size={19} color={c.label2} weight="regular" /></View>
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <T variant="body">{k.title}</T>
+                    <T variant="cap" color={c.label2}>{k.detail}</T>
+                  </View>
+                </View>
+                <Switch value={state.prefs.notify[k.key]} onValueChange={v => toggleNotify(k.key, v)} trackColor={{ true: c.good }} accessibilityLabel={`Meldingen voor ${k.title}`} />
+              </Row>
+            </View>
+          ))}
+          <T variant="cap" color={c.label2} style={{ paddingHorizontal: 16, paddingVertical: 12 }}>Elke melding gebruikt alleen wat jij gelogd hebt, en wordt overgeslagen als er niets te melden is. Alles blijft op je iPhone.</T>
         </Section>
 
         <Section title="App">
@@ -131,7 +151,7 @@ export default function Settings() {
             {([['system', 'Automatisch'], ['light', 'Licht'], ['dark', 'Donker']] as const).map(([v, l]) => <Chip key={v} title={l} on={state.prefs.appearance === v} onPress={() => update(s => { s.prefs.appearance = v; })} />)}
           </View>
           <Divider inset={60} />
-          <Row><Label icon="bolt.fill" title="Energie-eenheid" /><View style={{ flexDirection: 'row', gap: 6 }}>{(['kcal', 'kJ'] as const).map(u => <Chip key={u} title={u} on={state.prefs.unit === u} onPress={() => update(s => { s.prefs.unit = u; })} />)}</View></Row>
+          <Row><Label icon="flame" title="Energie-eenheid" /><View style={{ flexDirection: 'row', gap: 6 }}>{(['kcal', 'kJ'] as const).map(u => <Chip key={u} title={u} on={state.prefs.unit === u} onPress={() => update(s => { s.prefs.unit = u; })} />)}</View></Row>
           <Divider inset={60} />
           <Row onPress={() => router.push('/apikey')} label="AI-herkenning"><Label icon="sparkles" title="AI-herkenning (foto's)" /><T variant="sub" color={hasKey ? c.good : c.warn}>{hasKey ? 'Aan' : 'Sleutel nodig'}</T>{chev}</Row>
         </Section>
