@@ -26,6 +26,7 @@ function Root() {
         <Stack.Protected guard={state.onboarded}>
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="recipe/[id]" options={{ headerShown: true, headerTransparent: true, headerTitle: '', headerBackButtonDisplayMode: 'minimal' }} />
+          <Stack.Screen name="scan" options={{ presentation: 'fullScreenModal', animation: 'fade' }} />
           <Stack.Screen name="review" options={{ presentation: 'fullScreenModal' }} />
           <Stack.Screen name="settings" options={{ presentation: 'modal' }} />
           <Stack.Screen name="post" options={{ presentation: 'modal' }} />

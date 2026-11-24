@@ -74,13 +74,13 @@ const LIQUID = isLiquidGlassAvailable();
  * Liquid Glass on iOS 26 (expo-glass-effect, works in Expo Go). Older iOS, Android and web get a
  * frosted blur with a hairline edge, so floating controls read as glass everywhere.
  */
-export function Glass({ children, style, interactive, tint }: { children?: React.ReactNode; style?: StyleProp<ViewStyle>; interactive?: boolean; tint?: string }) {
+export function Glass({ children, style, interactive, tint, dark }: { children?: React.ReactNode; style?: StyleProp<ViewStyle>; interactive?: boolean; tint?: string; dark?: boolean }) {
   const c = useColors();
   const scheme = useColorScheme();
-  if (LIQUID) return <GlassView style={style} isInteractive={interactive} tintColor={tint}>{children}</GlassView>;
+  if (LIQUID) return <GlassView style={style} isInteractive={interactive} tintColor={tint} colorScheme={dark ? 'dark' : 'auto'}>{children}</GlassView>;
   return (
-    <View style={[{ overflow: 'hidden', borderWidth: StyleSheet.hairlineWidth, borderColor: c.sep, backgroundColor: tint ?? c.glass, boxShadow: c.shadow }, style]}>
-      {tint ? null : <BlurView intensity={40} tint={scheme === 'dark' ? 'dark' : 'light'} style={[StyleSheet.absoluteFill, { borderRadius: StyleSheet.flatten(style)?.borderRadius }]} />}
+    <View style={[{ overflow: 'hidden', borderWidth: StyleSheet.hairlineWidth, borderColor: dark ? 'rgba(255,255,255,0.14)' : c.sep, backgroundColor: tint ?? (dark ? 'rgba(20,20,20,0.42)' : c.glass), boxShadow: dark ? undefined : c.shadow }, style]}>
+      {tint ? null : <BlurView intensity={dark ? 30 : 40} tint={dark || scheme === 'dark' ? 'dark' : 'light'} style={[StyleSheet.absoluteFill, { borderRadius: StyleSheet.flatten(style)?.borderRadius }]} />}
       {children}
     </View>
   );
