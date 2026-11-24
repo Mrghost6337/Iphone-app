@@ -116,7 +116,7 @@ export default function RecipeDetail() {
                   <View style={{ flexDirection: 'row', gap: 14, padding: 16 }}>
                     <Pressable onPress={() => { haptic.light(); patch(x => { x.steps = toggleIn(steps, i); }); }} accessibilityRole="checkbox" accessibilityState={{ checked: done }} accessibilityLabel={`Stap ${i + 1}`}
                       style={{ width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: done ? c.good : hexA(c.accent, 0.14) }}>
-                      {done ? <Icon name="checkmark" size={15} color="#fff" /> : <Text style={{ color: c.accent, fontWeight: '700' }}>{i + 1}</Text>}
+                      {done ? <Icon name="checkmark" size={15} color={c.onAccent} /> : <Text style={{ color: c.accent, fontWeight: '700' }}>{i + 1}</Text>}
                     </Pressable>
                     <View style={{ flex: 1, gap: 8 }}>
                       <T variant="body" color={done ? c.label2 : c.label} style={{ textDecorationLine: done ? 'line-through' : 'none' }}>{st.text}</T>
@@ -168,7 +168,7 @@ function Check({ on, text, onPress }: { on: boolean; text: string; onPress: () =
     <Pressable onPress={() => { haptic.tap(); onPress(); }} accessibilityRole="checkbox" accessibilityState={{ checked: on }}
       style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 14, backgroundColor: pressed ? c.fill : 'transparent' })}>
       <View style={{ width: 28, height: 28, borderRadius: 9, borderWidth: 2, borderColor: on ? c.good : c.label3, backgroundColor: on ? c.good : 'transparent', alignItems: 'center', justifyContent: 'center' }}>
-        {on ? <Icon name="checkmark" size={14} color="#fff" /> : null}
+        {on ? <Icon name="checkmark" size={14} color={c.onAccent} /> : null}
       </View>
       <T variant="body" color={on ? c.label2 : c.label} style={{ flex: 1, textDecorationLine: on ? 'line-through' : 'none' }}>{text}</T>
     </Pressable>

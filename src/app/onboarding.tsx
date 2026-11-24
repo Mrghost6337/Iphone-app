@@ -130,7 +130,7 @@ function StepView({ step, p, set, next, finish, bottom }: { step: Step; p: Profi
           <Pressable onPress={pick} accessibilityRole="button" accessibilityLabel="Kies profielfoto" style={{ alignSelf: 'center' }}>
             <Avatar name={p.name} photo={p.photo} size={120} />
             <View style={{ position: 'absolute', right: 0, bottom: 0, width: 36, height: 36, borderRadius: 18, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: c.bg }}>
-              <Icon name="camera.fill" size={15} color="#fff" />
+              <Icon name="camera.fill" size={15} color={c.onAccent} />
             </View>
           </Pressable>
           {p.photo ? <Pressable accessibilityRole="button" hitSlop={8} onPress={() => set({ photo: null })} style={{ alignSelf: 'center' }}><T variant="bodyB" color={c.warn}>Foto verwijderen</T></Pressable> : null}
@@ -318,7 +318,7 @@ function StepView({ step, p, set, next, finish, bottom }: { step: Step; p: Profi
             <View style={{ flexDirection: 'row', gap: 16, marginTop: 16, paddingTop: 16, borderTopWidth: 0.5, borderTopColor: c.sep, alignSelf: 'stretch' }}>
               {([['Eiwit', t.protein, c.protein], ['Koolhydraten', t.carbs, c.carbs], ['Vet', t.fat, c.fat]] as const).map(([n, v, col]) => (
                 <View key={n} style={{ flex: 1 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}><View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: col }} /><T variant="cap" numberOfLines={1}>{n}</T></View>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}><View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: col }} /><T variant="cap" numberOfLines={1} adjustsFontSizeToFit>{n === 'Koolhydraten' ? 'Koolh.' : n}</T></View>
                   <T variant="num" style={{ marginTop: 4 }}>{v} g</T>
                 </View>
               ))}

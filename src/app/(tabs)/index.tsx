@@ -1,8 +1,9 @@
 import React, { useMemo } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
-import { Avatar, Bar, Card, Divider, Icon, IconBadge, IconButton, PillButton, Ring, Row, Section, T, haptic, hexA } from '@/components/ui';
+import { Avatar, Card, Divider, Fab, Glass, Icon, IconBadge, IconButton, PillButton, Ring, Row, Section, T, haptic, squircle } from '@/components/ui';
+import { points } from '@/lib/points';
 import { insights } from '@/lib/insights';
 import { MEALS, dayKey, lastNDays, fmt, mealBudgets, sameDay, scaled, sumEntries, targets } from '@/lib/nutrition';
 import { useStore } from '@/lib/store';
@@ -30,29 +31,49 @@ export default function Today() {
   const week = lastNDays(7);
   const setWater = (d: number) => { haptic.light(); update(s => { const k = dayKey(day); s.water[k] = Math.max(0, Math.min(30, (s.water[k] ?? 0) + d)); }); };
 
+  const streak = points(state.entries, t).streak;
+  const macros = [
+    { k: 'protein' as const, name: 'Eiwit', icon: 'fish', col: c.protein },
+    { k: 'carbs' as const, name: 'Koolhydraten', icon: 'carrot', col: c.carbs },
+    { k: 'fat' as const, name: 'Vet', icon: 'drop', col: c.fat },
+  ];
+
   return (
-    <ScrollView contentInsetAdjustmentBehavior="automatic" style={{ backgroundColor: c.bg }} contentContainerStyle={{ paddingTop: insets.top + 6, paddingBottom: 140 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: space.l, marginBottom: 6 }}>
-        <Pressable onPress={() => router.push('/settings')} accessibilityRole="button" accessibilityLabel="Profiel"><Avatar name={p.name} photo={p.photo} size={40} /></Pressable>
-        <View style={{ flexDirection: 'row', gap: 10 }}>
+    <View style={{ flex: 1, backgroundColor: c.bg }}>
+    <ScrollView contentInsetAdjustmentBehavior="automatic" style={{ backgroundColor: c.bg }} contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: 160 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, marginBottom: 14 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <View style={{ width: 30, height: 30, borderRadius: 9, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center', ...squircle }}>
+            <Icon name="fork.knife" size={15} color={c.onAccent} weight="bold" />
+          </View>
+          <T variant="title" accessibilityRole="header">Bord</T>
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           {!isToday ? <PillButton title="Vandaag" onPress={() => setDayIso(new Date().toISOString())} /> : null}
-          <IconButton icon="gearshape" label="Instellingen" onPress={() => router.push('/settings')} />
+          <Glass style={{ height: 40, borderRadius: 20, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <View accessible accessibilityLabel={`${streak} ${streak === 1 ? 'dag' : 'dagen'} op rij gelogd`} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+              <Icon name="flame.fill" size={16} color={streak ? c.carbs : c.label3} />
+              <T variant="bodyB" style={{ fontVariant: ['tabular-nums'] }}>{streak}</T>
+            </View>
+          </Glass>
+          <Pressable onPress={() => router.push('/settings')} accessibilityRole="button" accessibilityLabel="Profiel en instellingen" hitSlop={6}>
+            <Avatar name={p.name} photo={p.photo} size={40} />
+          </Pressable>
         </View>
       </View>
-      <View style={{ paddingHorizontal: 20, marginBottom: 12 }}>
-        <T variant="large" style={{ textTransform: 'capitalize' }}>{isToday ? 'Vandaag' : day.toLocaleDateString('nl-NL', { weekday: 'long' })}</T>
-        <T variant="bodyB" color={c.label2}>{day.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' })}{isToday && p.name ? ` · Hoi ${p.name}` : ''}</T>
-      </View>
 
-      <View style={{ flexDirection: 'row', paddingHorizontal: 10, marginBottom: 14 }}>
+      <View style={{ flexDirection: 'row', paddingHorizontal: 12, marginBottom: 18 }}>
         {week.map(d => {
-          const k = sumEntries(state.entries.filter(e => sameDay(e.date, d))).kcal, sel = sameDay(d, day);
+          const k = sumEntries(state.entries.filter(e => sameDay(e.date, d))).kcal, sel = sameDay(d, day), logged = k > 0;
           return (
-            <Pressable key={d.toISOString()} onPress={() => { haptic.tap(); setDayIso(d.toISOString()); }} style={{ flex: 1, alignItems: 'center', gap: 6 }}
+            <Pressable key={d.toISOString()} onPress={() => { haptic.tap(); setDayIso(d.toISOString()); }} style={{ flex: 1, alignItems: 'center' }}
               accessibilityRole="button" accessibilityLabel={`${d.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric' })}, ${fmt(k)} kcal`} accessibilityState={{ selected: sel }}>
-              <T variant="cap" color={sel ? c.accent : c.label2}>{d.toLocaleDateString('nl-NL', { weekday: 'short' }).replace('.', '')}</T>
-              <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: sel ? hexA(c.accent, 0.14) : 'transparent', alignItems: 'center', justifyContent: 'center' }}>
-                <Ring size={38} stroke={3.5} progress={k / t.calories}><T variant="cap" style={{ fontWeight: sel ? '900' : '600' }}>{d.getDate()}</T></Ring>
+              <View style={{ width: 44, paddingVertical: 8, borderRadius: 22, alignItems: 'center', gap: 6, backgroundColor: sel ? c.card : 'transparent', boxShadow: sel ? c.shadow : undefined }}>
+                <T variant="cap" color={sel ? c.label : c.label2}>{d.toLocaleDateString('nl-NL', { weekday: 'short' }).replace('.', '').slice(0, 2)}</T>
+                <View style={{ width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', borderWidth: 1.5,
+                  borderStyle: logged || sel ? 'solid' : 'dashed', borderColor: sel ? c.accent : logged ? c.label2 : c.label3, backgroundColor: sel ? c.accent : 'transparent' }}>
+                  <Text style={{ fontSize: 14, fontWeight: '600', color: sel ? c.onAccent : c.label, fontVariant: ['tabular-nums'] }}>{d.getDate()}</Text>
+                </View>
               </View>
             </Pressable>
           );
@@ -60,45 +81,46 @@ export default function Today() {
       </View>
 
       <Section>
-        <Card>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 18 }}>
-            <Ring size={160} stroke={17} progress={tot.kcal / t.calories}>
-              <View style={{ alignItems: 'center' }} accessible accessibilityLabel={over ? `${fmt(-left)} kilocalorieën te veel` : `${fmt(left)} kilocalorieën over`}>
-                <Text style={{ fontSize: 38, fontWeight: '700', letterSpacing: -1, color: c.label, fontVariant: ['tabular-nums'] }}>{E(Math.abs(left))}</Text>
-                <T variant="sub" color={c.label2}>{U} {over ? 'te veel' : 'over'}</T>
-              </View>
-            </Ring>
-            <View style={{ flex: 1, gap: 12 }}>
-              {[['Doel', E(t.calories), U], ['Gegeten', E(tot.kcal), U], ['Vezels', fmt(tot.fiber), `/ ${t.fiber} g`]].map(([k, v, u]) => (
-                <View key={k}><T variant="cap" color={c.label2}>{k}</T><Text style={{ fontSize: 22, fontWeight: '700', color: c.label, fontVariant: ['tabular-nums'] }}>{v} <Text style={{ fontSize: 13, color: c.label2 }}>{u}</Text></Text></View>
-              ))}
-            </View>
+        <Card style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 24, paddingHorizontal: 22 }}>
+          <View style={{ flex: 1, gap: 2 }} accessible accessibilityLabel={over ? `${fmt(-left)} kilocalorieën te veel` : `${fmt(left)} kilocalorieën over van ${fmt(t.calories)}`}>
+            <Text style={{ fontSize: 52, fontWeight: '700', letterSpacing: -2, color: c.label, fontVariant: ['tabular-nums'] }}>{E(Math.abs(left))}</Text>
+            <T variant="bodyB" color={c.label2}>{U} {over ? 'te veel' : 'over'}</T>
+            <T variant="cap" color={c.label3} style={{ marginTop: 6 }}>{E(tot.kcal)} gegeten · doel {E(t.calories)}</T>
           </View>
-          <View style={{ flexDirection: 'row', gap: 16, marginTop: 18, paddingTop: 16, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.sep }}>
-            {([['Eiwit', 'protein', c.protein], ['Koolh.', 'carbs', c.carbs], ['Vet', 'fat', c.fat]] as const).map(([n, k, col]) => {
-              const v = tot[k], target = t[k], l = Math.round(target - v);
-              return (
-                <View key={k} style={{ flex: 1, gap: 6 }} accessible accessibilityLabel={`${n} ${fmt(v)} van ${target} gram`}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}><View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: col }} /><T variant="cap">{n}</T></View>
-                  <Text style={{ fontSize: 20, fontWeight: '700', color: c.label, fontVariant: ['tabular-nums'] }}>{fmt(v)}<Text style={{ fontSize: 12, color: c.label2 }}> / {target} g</Text></Text>
-                  <Bar value={v / target} color={col} />
-                  <T variant="cap" color={c.label2} style={{ fontWeight: '500' }}>{l > 0 ? `nog ${l} g` : 'gehaald'}</T>
-                </View>
-              );
-            })}
-          </View>
+          <Ring size={112} stroke={10} progress={tot.kcal / t.calories}>
+            <Icon name="flame.fill" size={26} color={c.label} />
+          </Ring>
         </Card>
       </Section>
+
+      <View style={{ flexDirection: 'row', gap: 10, marginHorizontal: space.l, marginBottom: space.xl }}>
+        {macros.map(m => {
+          const v = tot[m.k], target = t[m.k], l = Math.round(target - v);
+          return (
+            <Card key={m.k} style={{ flex: 1, paddingHorizontal: 14, paddingVertical: 16, gap: 12 }}>
+              <View accessible accessibilityLabel={`${m.name}: ${l > 0 ? `nog ${l} gram` : 'gehaald'}, ${fmt(v)} van ${target} gram`}>
+                <Text style={{ fontSize: 22, fontWeight: '700', letterSpacing: -0.6, color: c.label, fontVariant: ['tabular-nums'] }}>{Math.abs(l)}g</Text>
+                <T variant="cap" color={c.label2}>{m.name} {l >= 0 ? 'over' : 'te veel'}</T>
+              </View>
+              <View style={{ alignItems: 'center' }}>
+                <Ring size={64} stroke={6} progress={v / target} color={m.col}>
+                  <Icon name={m.icon} size={18} color={m.col} />
+                </Ring>
+              </View>
+            </Card>
+          );
+        })}
+      </View>
 
       <Section>
         <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           <IconBadge icon="drop.fill" color={c.water} size={30} />
           <View style={{ flex: 1, gap: 8 }}>
-            <T variant="h3">Water <Text style={{ color: c.label2, fontWeight: '600' }}>{water} / {t.water} glazen</Text></T>
-            <View style={{ flexDirection: 'row', gap: 4 }}>{Array.from({ length: t.water }, (_, i) => <View key={i} style={{ flex: 1, height: 8, borderRadius: 3, backgroundColor: i < water ? c.water : c.fill }} />)}</View>
+            <T variant="h3">Water <Text style={{ color: c.label2, fontWeight: '500' }}>{water} / {t.water} glazen</Text></T>
+            <View style={{ flexDirection: 'row', gap: 4 }}>{Array.from({ length: t.water }, (_, i) => <View key={i} style={{ flex: 1, height: 6, borderRadius: 3, backgroundColor: i < water ? c.water : c.fill }} />)}</View>
           </View>
-          <IconButton icon="minus" size={38} label="Glas eraf" onPress={() => setWater(-1)} />
-          <IconButton icon="plus" size={38} label="Glas water erbij" color={c.water} onPress={() => setWater(1)} />
+          <IconButton icon="minus" size={38} glass={false} label="Glas eraf" onPress={() => setWater(-1)} />
+          <IconButton icon="plus" size={38} glass={false} label="Glas water erbij" onPress={() => setWater(1)} />
         </Card>
       </Section>
 
@@ -148,5 +170,8 @@ export default function Today() {
         );
       })}
     </ScrollView>
+    <Fab label="Eten toevoegen" onPress={() => router.push({ pathname: '/add', params: { day: dayIso } })}
+      style={{ position: 'absolute', right: 20, bottom: Platform.OS === 'web' ? 20 : insets.bottom + 72 }} />
+    </View>
   );
 }

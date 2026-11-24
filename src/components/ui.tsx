@@ -1,10 +1,11 @@
-import { GlassView } from 'expo-glass-effect';
+import { BlurView } from 'expo-blur';
+import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import { AndroidSymbol, SymbolView, SymbolViewProps } from 'expo-symbols';
 import React from 'react';
-import { Pressable, PressableProps, StyleProp, StyleSheet, Text, TextProps, TextStyle, View, ViewStyle } from 'react-native';
-import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
+import { Pressable, PressableProps, StyleProp, StyleSheet, Text, TextProps, TextStyle, View, ViewStyle, useColorScheme } from 'react-native';
+import Animated, { Easing, useAnimatedProps, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
 import { MATERIAL } from '@/lib/symbols';
 import { curve, radius, space, useColors } from '@/lib/theme';
@@ -50,26 +51,51 @@ export function T({ style, variant = 'body', color, ...rest }: TextProps & { var
 }
 /** Apple text styles (Large Title 34 → Caption 12). Bold for structure, numbers always tabular. */
 export const typo = StyleSheet.create({
-  hero: { fontSize: 54, fontWeight: '700', fontVariant: ['tabular-nums'], letterSpacing: -1.4 },
-  large: { fontSize: 34, fontWeight: '700', letterSpacing: -0.7, lineHeight: 40 },
-  title: { fontSize: 28, fontWeight: '700', letterSpacing: -0.5 },
-  h2: { fontSize: 20, fontWeight: '700', letterSpacing: -0.2 },
+  hero: { fontSize: 56, fontWeight: '700', fontVariant: ['tabular-nums'], letterSpacing: -2 },
+  large: { fontSize: 34, fontWeight: '700', letterSpacing: -1, lineHeight: 40 },
+  title: { fontSize: 28, fontWeight: '700', letterSpacing: -0.8 },
+  h2: { fontSize: 20, fontWeight: '700', letterSpacing: -0.4 },
   h3: { fontSize: 17, fontWeight: '600', letterSpacing: -0.2 },
   body: { fontSize: 17, fontWeight: '400', lineHeight: 23, letterSpacing: -0.2 },
   bodyB: { fontSize: 17, fontWeight: '600', letterSpacing: -0.2 },
   sub: { fontSize: 15, fontWeight: '400', lineHeight: 20, letterSpacing: -0.1 },
-  cap: { fontSize: 12, fontWeight: '600', letterSpacing: 0.1 },
-  num: { fontSize: 22, fontWeight: '700', fontVariant: ['tabular-nums'], letterSpacing: -0.4 },
+  cap: { fontSize: 13, fontWeight: '500', letterSpacing: -0.05 },
+  num: { fontSize: 22, fontWeight: '700', fontVariant: ['tabular-nums'], letterSpacing: -0.6 },
 }) as Record<string, TextStyle>;
 
 export function Card({ children, style, pad = true }: { children: React.ReactNode; style?: StyleProp<ViewStyle>; pad?: boolean }) {
   const c = useColors();
-  return <View style={[{ backgroundColor: c.card, borderRadius: radius.l, padding: pad ? space.l : 0, overflow: 'hidden', ...squircle }, style]}>{children}</View>;
+  return <View style={[{ backgroundColor: c.card, borderRadius: radius.l, padding: pad ? space.l + 2 : 0, overflow: 'hidden', boxShadow: c.shadow, ...squircle }, style]}>{children}</View>;
 }
 
-/** Liquid Glass on iOS 26 (expo-glass-effect, works in Expo Go); plain view elsewhere. */
+const LIQUID = isLiquidGlassAvailable();
+
+/**
+ * Liquid Glass on iOS 26 (expo-glass-effect, works in Expo Go). Older iOS, Android and web get a
+ * frosted blur with a hairline edge, so floating controls read as glass everywhere.
+ */
 export function Glass({ children, style, interactive, tint }: { children?: React.ReactNode; style?: StyleProp<ViewStyle>; interactive?: boolean; tint?: string }) {
-  return <GlassView style={style} isInteractive={interactive} tintColor={tint}>{children}</GlassView>;
+  const c = useColors();
+  const scheme = useColorScheme();
+  if (LIQUID) return <GlassView style={style} isInteractive={interactive} tintColor={tint}>{children}</GlassView>;
+  return (
+    <View style={[{ overflow: 'hidden', borderWidth: StyleSheet.hairlineWidth, borderColor: c.sep, backgroundColor: tint ?? c.glass, boxShadow: c.shadow }, style]}>
+      {tint ? null : <BlurView intensity={40} tint={scheme === 'dark' ? 'dark' : 'light'} style={[StyleSheet.absoluteFill, { borderRadius: StyleSheet.flatten(style)?.borderRadius }]} />}
+      {children}
+    </View>
+  );
+}
+
+/** Floating action: a black (white in dark mode) glass disc, the app's one way to add food from anywhere. */
+export function Fab({ onPress, label, icon = 'plus', style }: { onPress: () => void; label: string; icon?: string; style?: StyleProp<ViewStyle> }) {
+  const c = useColors();
+  return (
+    <Press accessibilityRole="button" accessibilityLabel={label} onPress={() => { haptic.light(); onPress(); }} scaleTo={0.92} style={style}>
+      <Glass interactive tint={c.accent} style={{ width: 62, height: 62, borderRadius: 31, alignItems: 'center', justifyContent: 'center' }}>
+        <Icon name={icon} size={26} color={c.onAccent} weight="bold" />
+      </Glass>
+    </Press>
+  );
 }
 
 /** Primary action. Solid accent, one per screen. */
@@ -77,7 +103,7 @@ export function Button({ title, icon, onPress, disabled, right, style }: { title
   const c = useColors();
   return (
     <Press accessibilityRole="button" accessibilityState={{ disabled }} disabled={disabled} onPress={() => { haptic.light(); onPress(); }}
-      style={[{ height: 54, borderRadius: 27, backgroundColor: c.accent, opacity: disabled ? 0.35 : 1, flexDirection: 'row', alignItems: 'center',
+      style={[{ height: 56, borderRadius: 28, backgroundColor: c.accent, opacity: disabled ? 0.35 : 1, flexDirection: 'row', alignItems: 'center',
         justifyContent: right ? 'space-between' : 'center', paddingHorizontal: 22, gap: 8, ...squircle }, style]}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         {icon ? <Icon name={icon} size={19} color={c.onAccent} /> : null}
@@ -117,8 +143,8 @@ export function Chip({ title, on, onPress }: { title: string; on: boolean; onPre
   const c = useColors();
   return (
     <Press accessibilityRole="button" accessibilityState={{ selected: on }} onPress={() => { haptic.tap(); onPress(); }}
-      style={{ paddingHorizontal: 14, minHeight: 38, justifyContent: 'center', borderRadius: 19, backgroundColor: on ? c.label : c.fill }}>
-      <Text style={{ fontSize: 15, fontWeight: on ? '600' : '500', color: on ? c.bg : c.label }}>{title}</Text>
+      style={{ paddingHorizontal: 15, minHeight: 38, justifyContent: 'center', borderRadius: 19, backgroundColor: on ? c.accent : c.card, boxShadow: on ? undefined : c.shadow }}>
+      <Text style={{ fontSize: 15, fontWeight: on ? '600' : '500', color: on ? c.onAccent : c.label }}>{title}</Text>
     </Press>
   );
 }
@@ -127,11 +153,10 @@ export function Tile({ title, detail, icon, on, onPress, style }: { title: strin
   const c = useColors();
   return (
     <Press accessibilityRole="button" accessibilityState={{ selected: on }} onPress={() => { haptic.tap(); onPress(); }}
-      style={[{ flex: 1, minHeight: 104, borderRadius: radius.l, padding: 14, gap: 6, backgroundColor: c.card, ...squircle,
-        borderWidth: 1.5, borderColor: on ? c.accent : c.sep }, style]}>
-      <IconBadge icon={icon} on={on} />
-      <T variant="h3" style={{ marginTop: 4 }}>{title}</T>
-      {detail ? <T variant="sub" color={c.label2}>{detail}</T> : null}
+      style={[{ flex: 1, minHeight: 104, borderRadius: radius.l, padding: 16, gap: 6, backgroundColor: on ? c.accent : c.card, boxShadow: on ? undefined : c.shadow, ...squircle }, style]}>
+      <IconBadge icon={icon} color={on ? c.onAccent : c.label} />
+      <T variant="h3" color={on ? c.onAccent : c.label} style={{ marginTop: 4 }}>{title}</T>
+      {detail ? <T variant="sub" color={on ? hexA(c.onAccent, 0.7) : c.label2}>{detail}</T> : null}
     </Press>
   );
 }
@@ -146,14 +171,13 @@ export function ChoiceRow({ title, detail, icon, on, onPress }: { title: string;
   const c = useColors();
   return (
     <Press accessibilityRole="button" accessibilityState={{ selected: on }} onPress={() => { haptic.tap(); onPress(); }} scaleTo={0.98}
-      style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: 16, paddingVertical: 14, borderRadius: radius.l, backgroundColor: c.card, ...squircle,
-        borderWidth: 1.5, borderColor: on ? c.accent : c.sep }}>
-      {icon ? <IconBadge icon={icon} on={on} /> : null}
+      style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: 18, paddingVertical: 16, minHeight: 64, borderRadius: radius.l, backgroundColor: on ? c.accent : c.card, boxShadow: on ? undefined : c.shadow, ...squircle }}>
+      {icon ? <IconBadge icon={icon} color={on ? c.onAccent : c.label} /> : null}
       <View style={{ flex: 1, minWidth: 0, gap: 2 }}>
-        <T variant="h3">{title}</T>
-        {detail ? <T variant="sub" color={c.label2}>{detail}</T> : null}
+        <T variant="h3" color={on ? c.onAccent : c.label}>{title}</T>
+        {detail ? <T variant="sub" color={on ? hexA(c.onAccent, 0.7) : c.label2}>{detail}</T> : null}
       </View>
-      <Icon name={on ? 'checkmark.circle.fill' : 'circle'} size={24} color={on ? c.accent : c.label3} weight="regular" />
+      {on ? <Icon name="checkmark" size={18} color={c.onAccent} weight="bold" /> : null}
     </Press>
   );
 }
@@ -162,22 +186,31 @@ export function Avatar({ name, photo, size = 36 }: { name: string; photo?: strin
   const c = useColors();
   if (photo) return <Image source={{ uri: photo }} style={{ width: size, height: size, borderRadius: size / 2 }} contentFit="cover" />;
   return (
-    <View style={{ width: size, height: size, borderRadius: size / 2, alignItems: 'center', justifyContent: 'center', backgroundColor: hexA(c.accent, 0.16) }}>
-      {name ? <Text style={{ color: c.accent, fontWeight: '600', fontSize: size * 0.42 }}>{name[0].toUpperCase()}</Text> : <Icon name="person.fill" size={size * 0.5} color={c.accent} />}
+    <View style={{ width: size, height: size, borderRadius: size / 2, alignItems: 'center', justifyContent: 'center', backgroundColor: c.accent }}>
+      {name ? <Text style={{ color: c.onAccent, fontWeight: '600', fontSize: size * 0.42 }}>{name[0].toUpperCase()}</Text> : <Icon name="person.fill" size={size * 0.5} color={c.onAccent} />}
     </View>
   );
 }
 
-/** Progress ring, solid accent; red overflow arc when over target. */
-export function Ring({ size, stroke, progress, children }: { size: number; stroke: number; progress: number; children?: React.ReactNode }) {
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+
+/**
+ * Progress ring. Black by default, a macro colour when given. Fills over 450 ms ease-out when the value
+ * changes (a state change worth seeing); jumps straight there with Reduce Motion. Red overflow arc past 100%.
+ */
+export function Ring({ size, stroke, progress, color, children }: { size: number; stroke: number; progress: number; color?: string; children?: React.ReactNode }) {
   const c = useColors();
+  const reduce = useReducedMotion();
   const r = (size - stroke) / 2, circ = 2 * Math.PI * r, p = Math.max(0, Math.min(progress, 1)), over = progress > 1;
+  const v = useSharedValue(reduce ? p : 0);
+  React.useEffect(() => { v.set(reduce ? p : withTiming(p, { duration: 450, easing: easeOut })); }, [p, reduce, v]);
+  const arc = useAnimatedProps(() => ({ strokeDashoffset: circ * (1 - v.get()), strokeOpacity: v.get() > 0.002 ? 1 : 0 }));
   return (
     <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
       <Svg width={size} height={size} style={{ position: 'absolute', transform: [{ rotate: '-90deg' }] }}>
-        <Circle cx={size / 2} cy={size / 2} r={r} stroke={c.fill} strokeOpacity={1} strokeWidth={stroke} fill="none" />
-        <Circle cx={size / 2} cy={size / 2} r={r} stroke={over ? c.warn : c.accent} strokeWidth={stroke} fill="none" strokeLinecap="round"
-          strokeDasharray={`${circ}`} strokeDashoffset={circ * (1 - p)} />
+        <Circle cx={size / 2} cy={size / 2} r={r} stroke={c.fill} strokeWidth={stroke} fill="none" />
+        <AnimatedCircle cx={size / 2} cy={size / 2} r={r} stroke={over ? c.warn : color ?? c.accent} strokeWidth={stroke} fill="none" strokeLinecap="round"
+          strokeDasharray={`${circ}`} animatedProps={arc} />
         {over ? <Circle cx={size / 2} cy={size / 2} r={r} stroke={c.warn} strokeOpacity={0.55} strokeWidth={stroke * 0.42} fill="none" strokeLinecap="round"
           strokeDasharray={`${circ}`} strokeDashoffset={circ * (1 - Math.min(progress - 1, 1))} /> : null}
       </Svg>

@@ -71,7 +71,7 @@ export default function Settings() {
         <View style={{ alignItems: 'center', gap: 8 }}>
           <Pressable onPress={pickPhoto} accessibilityRole="button" accessibilityLabel="Wijzig profielfoto">
             <Avatar name={p.name} photo={p.photo} size={104} />
-            <View style={{ position: 'absolute', right: 0, bottom: 0, width: 34, height: 34, borderRadius: 17, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: c.bg }}><Icon name="camera.fill" size={14} color="#fff" /></View>
+            <View style={{ position: 'absolute', right: 0, bottom: 0, width: 34, height: 34, borderRadius: 17, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: c.bg }}><Icon name="camera.fill" size={14} color={c.onAccent} /></View>
           </Pressable>
           <T variant="title">{p.name || 'Jij'}</T>
           {p.photo ? <Pressable accessibilityRole="button" hitSlop={8} onPress={() => setP({ photo: null })}><T variant="bodyB" color={c.warn}>Profielfoto verwijderen</T></Pressable> : <T variant="sub" color={c.label2}>Tik op de foto om er een te kiezen</T>}

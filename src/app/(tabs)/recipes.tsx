@@ -74,7 +74,7 @@ export default function Recipes() {
                   <Pressable onPress={() => { haptic.light(); update(st => { st.recipes[r.id] = { ...st.recipes[r.id], fav: !s.fav }; }); }} hitSlop={8}
                     accessibilityRole="button" accessibilityLabel={s.fav ? 'Uit opgeslagen' : 'Bewaar recept'} style={{ position: 'absolute', right: 12, top: 12 }}>
                     <Glass interactive style={{ width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center' }}>
-                      <Icon name={s.fav ? 'bookmark.fill' : 'bookmark'} size={18} color={s.fav ? '#FFD43B' : '#fff'} />
+                      <Icon name={s.fav ? 'bookmark.fill' : 'bookmark'} size={18} color={'#fff'} />
                     </Glass>
                   </Pressable>
                 </View>
